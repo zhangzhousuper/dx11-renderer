@@ -6,6 +6,9 @@
 #include <d3d11_1.h>
 #include <DirectXMath.h>
 #include "GameTimer.h"
+#include "Mouse.h"
+#include "Keyboard.h"
+#include "GameTimer.h"
 
 class D3DApp
 {
@@ -63,7 +66,13 @@ protected:
 	ComPtr<ID3D11DepthStencilView> m_pDepthStencilView;   // 深度模板视图
 	D3D11_VIEWPORT m_ScreenViewport;                      // 视口
 
-	// 派生类应该在构造函数设置好这些自定义的初始参数
+	
+	// 键鼠输入
+	std::unique_ptr<DirectX::Mouse> m_pMouse;						// 鼠标
+	DirectX::Mouse::ButtonStateTracker m_MouseTracker;				// 鼠标状态追踪器
+	std::unique_ptr<DirectX::Keyboard> m_pKeyboard;					// 键盘
+	DirectX::Keyboard::KeyboardStateTracker m_KeyboardTracker;		// 键盘状态追踪器
+														  // 派生类应该在构造函数设置好这些自定义的初始参数
 	std::wstring m_MainWndCaption;                        // 主窗口标题
 	int m_ClientWidth;                                    // 视口宽度
 	int m_ClientHeight;                                   // 视口高度
