@@ -2,13 +2,12 @@
 #define GAMEAPP_H
 
 #include "d3dApp.h"
-#include "LightHelper.h"
 #include "Geometry.h"
+#include "LightHelper.h"
 
 class GameApp : public D3DApp
 {
 public:
-
 	struct VSConstantBuffer
 	{
 		DirectX::XMMATRIX world;
@@ -42,10 +41,16 @@ public:
 private:
 	bool InitEffect();
 	bool InitResource();
+
 	bool ResetMesh(const Geometry::MeshData<VertexPosNormalColor>& meshData);
 
 
 private:
+
+	ComPtr<ID2D1SolidColorBrush> m_pColorBrush;	    // 单色笔刷
+	ComPtr<IDWriteFont> m_pFont;					// 字体
+	ComPtr<IDWriteTextFormat> m_pTextFormat;		// 文本格式
+
 	ComPtr<ID3D11InputLayout> m_pVertexLayout;	    // 顶点输入布局
 	ComPtr<ID3D11Buffer> m_pVertexBuffer;			// 顶点缓冲区
 	ComPtr<ID3D11Buffer> m_pIndexBuffer;			// 索引缓冲区
