@@ -45,6 +45,9 @@
     <ClInclude Include="Vertex.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
@@ -74,22 +77,21 @@
     <ClCompile Include="Vertex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Cube_VS.hlsl">
+    <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>源文件</Filter>
-    </FxCompile>
-    <FxCompile Include="Cube_PS.hlsl">
-      <Filter>源文件</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\Light_VS.hlsl" />
-    <FxCompile Include="HLSL\Light_PS.hlsl" />
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Cube.hlsli">
       <Filter>源文件</Filter>
     </None>
-    <None Include="HLSL\Light.hlsli" />
     <None Include="HLSL\LightHelper.hlsli" />
+    <None Include="HLSL\Basic.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSL\Basic_VS_2D.hlsl" />
+    <FxCompile Include="HLSL\Basic_PS_2D.hlsl" />
+    <FxCompile Include="HLSL\Basic_VS_3D.hlsl" />
+    <FxCompile Include="HLSL\Basic_PS_3D.hlsl" />
   </ItemGroup>
 </Project>
