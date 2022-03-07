@@ -1,6 +1,7 @@
 #include "Basic.hlsli"
 
-VertexPosHTex VS_2D(VertexPosTex vIn)
+// ¶¥µã×ÅÉ«Æ÷(2D)
+VertexPosHTex VS(VertexPosTex vIn)
 {
     VertexPosHTex vOut;
     vOut.PosH = float4(vIn.PosL, 1.0f);

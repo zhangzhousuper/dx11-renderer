@@ -1,7 +1,8 @@
 #include "LightHelper.hlsli"
 
-Texture2D gTex : register(t0);
-SamplerState gSamLinear : register(s0);
+Texture2D g_Tex : register(t0);
+SamplerState g_SamLinear : register(s0);
+
 
 cbuffer VSConstantBuffer : register(b0)
 {
@@ -21,10 +22,11 @@ cbuffer PSConstantBuffer : register(b1)
     int g_NumPointLight;
     int g_NumSpotLight;
     float g_Pad1;
-    
+
     float3 g_EyePosW;
     float g_Pad2;
 }
+
 
 struct VertexPosNormalTex
 {
@@ -52,3 +54,13 @@ struct VertexPosHTex
     float4 PosH : SV_POSITION;
     float2 Tex : TEXCOORD;
 };
+
+
+
+
+
+
+
+
+
+

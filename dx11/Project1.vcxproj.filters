@@ -48,6 +48,9 @@
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="WICTextureLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
@@ -78,6 +81,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

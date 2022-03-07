@@ -1,11 +1,15 @@
 #include "Basic.hlsli"
 
-float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
+// 像素着色器(3D)
+float4 PS(VertexPosHWNormalTex pIn) : SV_Target
 {
+    // 标准化法向量
     pIn.NormalW = normalize(pIn.NormalW);
-    
+
+    // 顶点指向眼睛的向量
     float3 toEyeW = normalize(g_EyePosW - pIn.PosW);
-    
+
+    // 初始化为0 
     float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -42,7 +46,6 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
     float4 texColor = g_Tex.Sample(g_SamLinear, pIn.Tex);
     float4 litColor = texColor * (ambient + diffuse) + spec;
     litColor.a = texColor.a * g_Material.Diffuse.a;
-    
+	
     return litColor;
-    
 }
