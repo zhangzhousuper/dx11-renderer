@@ -95,6 +95,9 @@
     <ClCompile Include="Transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Cube.hlsli">
@@ -108,5 +111,9 @@
     <FxCompile Include="HLSL\Basic_PS_2D.hlsl" />
     <FxCompile Include="HLSL\Basic_VS_3D.hlsl" />
     <FxCompile Include="HLSL\Basic_PS_3D.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Texture\bricks.dds" />
+    <Image Include="Texture\floor.dds" />
   </ItemGroup>
 </Project>
