@@ -1,4 +1,4 @@
-#include "Transform.h"
+ï»¿#include "Transform.h"
 
 using namespace DirectX;
 
@@ -159,7 +159,7 @@ void Transform::RotateAround(const XMFLOAT3& point, const XMFLOAT3& axis, float 
 	XMVECTOR positionVec = XMLoadFloat3(&m_Position);
 	XMVECTOR centerVec = XMLoadFloat3(&point);
 
-	// ÒÔpointÎªÔ­µã½øĞĞĞı×ª
+	// ä»¥pointä¸ºåŸç‚¹è¿›è¡Œæ—‹è½¬
 	XMMATRIX RT = XMMatrixRotationRollPitchYawFromVector(rotationVec) * XMMatrixTranslationFromVector(positionVec - centerVec);
 	RT *= XMMatrixRotationAxis(XMLoadFloat3(&axis), radian);
 	RT *= XMMatrixTranslationFromVector(centerVec);
@@ -196,9 +196,9 @@ void Transform::LookTo(const XMFLOAT3& direction, const XMFLOAT3& up)
 
 XMFLOAT3 Transform::GetEulerAnglesFromRotationMatrix(const XMFLOAT4X4& rotationMatrix)
 {
-	// Í¨¹ıĞı×ª¾ØÕó·´ÇóÅ·À­½Ç
+	// é€šè¿‡æ—‹è½¬çŸ©é˜µåæ±‚æ¬§æ‹‰è§’
 	float c = sqrtf(1.0f - rotationMatrix(2, 1) * rotationMatrix(2, 1));
-	// ·ÀÖ¹r[2][1]³öÏÖ´óÓÚ1µÄÇé¿ö
+	// é˜²æ­¢r[2][1]å‡ºç°å¤§äº1çš„æƒ…å†µ
 	if (isnan(c))
 		c = 0.0f;
 	XMFLOAT3 rotation;

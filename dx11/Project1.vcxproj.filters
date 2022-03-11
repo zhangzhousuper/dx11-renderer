@@ -57,6 +57,9 @@
     <ClInclude Include="Transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="RenderStates.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
@@ -98,6 +101,9 @@
     <ClCompile Include="Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="RenderStates.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Cube.hlsli">
@@ -115,5 +121,13 @@
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />
     <Image Include="Texture\floor.dds" />
+    <Image Include="Texture\brick.dds" />
+    <Image Include="Texture\checkboard.dds" />
+    <Image Include="Texture\flare.dds" />
+    <Image Include="Texture\flarealpha.dds" />
+    <Image Include="Texture\ice.dds" />
+    <Image Include="Texture\water.dds" />
+    <Image Include="Texture\WireFence.dds" />
+    <Image Include="Texture\WoodCrate.dds" />
   </ItemGroup>
 </Project>

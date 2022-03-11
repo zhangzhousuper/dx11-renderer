@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <DirectXMath.h>
 
 class Transform {
@@ -13,87 +13,87 @@ public:
 	Transform(Transform&&) = default;
 	Transform& operator=(Transform&&) = default;
 
-	// »ñÈ¡¶ÔÏóËõ·Å±ÈÀı
+	// è·å–å¯¹è±¡ç¼©æ”¾æ¯”ä¾‹
 	DirectX::XMFLOAT3 GetScale() const;
-	// »ñÈ¡¶ÔÏóËõ·Å±ÈÀı
+	// è·å–å¯¹è±¡ç¼©æ”¾æ¯”ä¾‹
 	DirectX::XMVECTOR GetScaleXM() const;
 
-	// »ñÈ¡¶ÔÏóÅ·À­½Ç(»¡¶ÈÖÆ)
-	// ¶ÔÏóÒÔZ-X-YÖáË³ĞòĞı×ª
+	// è·å–å¯¹è±¡æ¬§æ‹‰è§’(å¼§åº¦åˆ¶)
+	// å¯¹è±¡ä»¥Z-X-Yè½´é¡ºåºæ—‹è½¬
 	DirectX::XMFLOAT3 GetRotation() const;
 
-	// »ñÈ¡¶ÔÏóÅ·À­½Ç(»¡¶ÈÖÆ)
-	// ¶ÔÏóÒÔZ-X-YÖáË³ĞòĞı×ª
+	// è·å–å¯¹è±¡æ¬§æ‹‰è§’(å¼§åº¦åˆ¶)
+	// å¯¹è±¡ä»¥Z-X-Yè½´é¡ºåºæ—‹è½¬
 	DirectX::XMVECTOR GetRotationXM() const;
 
-    // »ñÈ¡¶ÔÏóÎ»ÖÃ
+    // è·å–å¯¹è±¡ä½ç½®
     DirectX::XMFLOAT3 GetPosition() const;
-    // »ñÈ¡¶ÔÏóÎ»ÖÃ
+    // è·å–å¯¹è±¡ä½ç½®
     DirectX::XMVECTOR GetPositionXM() const;
 
-    // »ñÈ¡ÓÒ·½ÏòÖá
+    // è·å–å³æ–¹å‘è½´
     DirectX::XMFLOAT3 GetRightAxis() const;
-    // »ñÈ¡ÓÒ·½ÏòÖá
+    // è·å–å³æ–¹å‘è½´
     DirectX::XMVECTOR GetRightAxisXM() const;
 
-    // »ñÈ¡ÉÏ·½ÏòÖá
+    // è·å–ä¸Šæ–¹å‘è½´
     DirectX::XMFLOAT3 GetUpAxis() const;
-    // »ñÈ¡ÉÏ·½ÏòÖá
+    // è·å–ä¸Šæ–¹å‘è½´
     DirectX::XMVECTOR GetUpAxisXM() const;
 
-    // »ñÈ¡Ç°·½ÏòÖá
+    // è·å–å‰æ–¹å‘è½´
     DirectX::XMFLOAT3 GetForwardAxis() const;
-    // »ñÈ¡Ç°·½ÏòÖá
+    // è·å–å‰æ–¹å‘è½´
     DirectX::XMVECTOR GetForwardAxisXM() const;
 
-    // »ñÈ¡ÊÀ½ç±ä»»¾ØÕó
+    // è·å–ä¸–ç•Œå˜æ¢çŸ©é˜µ
     DirectX::XMFLOAT4X4 GetLocalToWorldMatrix() const;
-    // »ñÈ¡ÊÀ½ç±ä»»¾ØÕó
+    // è·å–ä¸–ç•Œå˜æ¢çŸ©é˜µ
     DirectX::XMMATRIX GetLocalToWorldMatrixXM() const;
 
-    // »ñÈ¡ÄæÊÀ½ç±ä»»¾ØÕó
+    // è·å–é€†ä¸–ç•Œå˜æ¢çŸ©é˜µ
     DirectX::XMFLOAT4X4 GetWorldToLocalMatrix() const;
-    // »ñÈ¡ÄæÊÀ½ç±ä»»¾ØÕó
+    // è·å–é€†ä¸–ç•Œå˜æ¢çŸ©é˜µ
     DirectX::XMMATRIX GetWorldToLocalMatrixXM() const;
 
-    // ÉèÖÃ¶ÔÏóËõ·Å±ÈÀı
+    // è®¾ç½®å¯¹è±¡ç¼©æ”¾æ¯”ä¾‹
     void SetScale(const DirectX::XMFLOAT3& scale);
-    // ÉèÖÃ¶ÔÏóËõ·Å±ÈÀı
+    // è®¾ç½®å¯¹è±¡ç¼©æ”¾æ¯”ä¾‹
     void SetScale(float x, float y, float z);
 
-    // ÉèÖÃ¶ÔÏóÅ·À­½Ç(»¡¶ÈÖÆ)
-    // ¶ÔÏó½«ÒÔZ-X-YÖáË³ĞòĞı×ª
+    // è®¾ç½®å¯¹è±¡æ¬§æ‹‰è§’(å¼§åº¦åˆ¶)
+    // å¯¹è±¡å°†ä»¥Z-X-Yè½´é¡ºåºæ—‹è½¬
     void SetRotation(const DirectX::XMFLOAT3& eulerAnglesInRadian);
-    // ÉèÖÃ¶ÔÏóÅ·À­½Ç(»¡¶ÈÖÆ)
-    // ¶ÔÏó½«ÒÔZ-X-YÖáË³ĞòĞı×ª
+    // è®¾ç½®å¯¹è±¡æ¬§æ‹‰è§’(å¼§åº¦åˆ¶)
+    // å¯¹è±¡å°†ä»¥Z-X-Yè½´é¡ºåºæ—‹è½¬
     void SetRotation(float x, float y, float z);
 
-    // ÉèÖÃ¶ÔÏóÎ»ÖÃ
+    // è®¾ç½®å¯¹è±¡ä½ç½®
     void SetPosition(const DirectX::XMFLOAT3& position);
-    // ÉèÖÃ¶ÔÏóÎ»ÖÃ
+    // è®¾ç½®å¯¹è±¡ä½ç½®
     void SetPosition(float x, float y, float z);
 
-    // Ö¸¶¨Å·À­½ÇĞı×ª¶ÔÏó
+    // æŒ‡å®šæ¬§æ‹‰è§’æ—‹è½¬å¯¹è±¡
     void Rotate(const DirectX::XMFLOAT3& eulerAnglesInRadian);
-    // Ö¸¶¨ÒÔÔ­µãÎªÖĞĞÄÈÆÖáĞı×ª
+    // æŒ‡å®šä»¥åŸç‚¹ä¸ºä¸­å¿ƒç»•è½´æ—‹è½¬
     void RotateAxis(const DirectX::XMFLOAT3& axis, float radian);
-    // Ö¸¶¨ÒÔpointÎªĞı×ªÖĞĞÄÈÆÖáĞı×ª
+    // æŒ‡å®šä»¥pointä¸ºæ—‹è½¬ä¸­å¿ƒç»•è½´æ—‹è½¬
     void RotateAround(const DirectX::XMFLOAT3& point, const DirectX::XMFLOAT3& axis, float radian);
 
-    // ÑØ×ÅÄ³Ò»·½ÏòÆ½ÒÆ
+    // æ²¿ç€æŸä¸€æ–¹å‘å¹³ç§»
     void Translate(const DirectX::XMFLOAT3& direction, float magnitude);
 
-    // ¹Û²ìÄ³Ò»µã
+    // è§‚å¯ŸæŸä¸€ç‚¹
     void LookAt(const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up = { 0.0f, 1.0f, 0.0f });
-    // ÑØ×ÅÄ³Ò»·½Ïò¹Û²ì
+    // æ²¿ç€æŸä¸€æ–¹å‘è§‚å¯Ÿ
     void LookTo(const DirectX::XMFLOAT3& direction, const DirectX::XMFLOAT3& up = { 0.0f, 1.0f, 0.0f });
 
 private:
-    // ´ÓĞı×ª¾ØÕó»ñÈ¡Ğı×ªÅ·À­½Ç
+    // ä»æ—‹è½¬çŸ©é˜µè·å–æ—‹è½¬æ¬§æ‹‰è§’
     DirectX::XMFLOAT3 GetEulerAnglesFromRotationMatrix(const DirectX::XMFLOAT4X4& rotationMatrix);
 
 private:
-    DirectX::XMFLOAT3 m_Scale = { 1.0f, 1.0f, 1.0f };                // Ëõ·Å
-    DirectX::XMFLOAT3 m_Rotation = {};                                // Ğı×ªÅ·À­½Ç(»¡¶ÈÖÆ)
-    DirectX::XMFLOAT3 m_Position = {};                                // Î»ÖÃ
+    DirectX::XMFLOAT3 m_Scale = { 1.0f, 1.0f, 1.0f };                // ç¼©æ”¾
+    DirectX::XMFLOAT3 m_Rotation = {};                                // æ—‹è½¬æ¬§æ‹‰è§’(å¼§åº¦åˆ¶)
+    DirectX::XMFLOAT3 m_Position = {};                                // ä½ç½®
 };

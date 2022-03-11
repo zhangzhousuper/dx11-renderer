@@ -156,6 +156,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="RenderStates.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WICTextureLoader.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="RenderStates.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="WICTextureLoader.cpp" />
@@ -209,8 +211,16 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Texture\brick.dds" />
     <Image Include="Texture\bricks.dds" />
+    <Image Include="Texture\checkboard.dds" />
+    <Image Include="Texture\flare.dds" />
+    <Image Include="Texture\flarealpha.dds" />
     <Image Include="Texture\floor.dds" />
+    <Image Include="Texture\ice.dds" />
+    <Image Include="Texture\water.dds" />
+    <Image Include="Texture\WireFence.dds" />
+    <Image Include="Texture\WoodCrate.dds" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
