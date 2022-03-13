@@ -3,7 +3,7 @@
 using namespace DirectX;
 
 Transform::Transform(const DirectX::XMFLOAT3& scale, const DirectX::XMFLOAT3& rotation, const DirectX::XMFLOAT3& position)
-	:m_Scale(scale), m_Rotation(rotation), m_Position(position)
+	: m_Scale(scale), m_Rotation(rotation), m_Position(position)
 {
 }
 
@@ -12,7 +12,7 @@ XMFLOAT3 Transform::GetScale() const
 	return m_Scale;
 }
 
-XMVECTOR Transform::GetScaleXM() const
+DirectX::XMVECTOR Transform::GetScaleXM() const
 {
 	return XMLoadFloat3(&m_Scale);
 }
@@ -22,7 +22,7 @@ XMFLOAT3 Transform::GetRotation() const
 	return m_Rotation;
 }
 
-XMVECTOR Transform::GetRotationXM() const
+DirectX::XMVECTOR Transform::GetRotationXM() const
 {
 	return XMLoadFloat3(&m_Rotation);
 }
@@ -32,7 +32,7 @@ XMFLOAT3 Transform::GetPosition() const
 	return m_Position;
 }
 
-XMVECTOR Transform::GetPositionXM() const
+DirectX::XMVECTOR Transform::GetPositionXM() const
 {
 	return XMLoadFloat3(&m_Position);
 }
@@ -45,7 +45,7 @@ XMFLOAT3 Transform::GetRightAxis() const
 	return right;
 }
 
-XMVECTOR Transform::GetRightAxisXM() const
+DirectX::XMVECTOR Transform::GetRightAxisXM() const
 {
 	XMFLOAT3 right = GetRightAxis();
 	return XMLoadFloat3(&right);
@@ -59,7 +59,7 @@ XMFLOAT3 Transform::GetUpAxis() const
 	return up;
 }
 
-XMVECTOR Transform::GetUpAxisXM() const
+DirectX::XMVECTOR Transform::GetUpAxisXM() const
 {
 	XMFLOAT3 up = GetUpAxis();
 	return XMLoadFloat3(&up);
@@ -73,7 +73,7 @@ XMFLOAT3 Transform::GetForwardAxis() const
 	return forward;
 }
 
-XMVECTOR Transform::GetForwardAxisXM() const
+DirectX::XMVECTOR Transform::GetForwardAxisXM() const
 {
 	XMFLOAT3 forward = GetForwardAxis();
 	return XMLoadFloat3(&forward);
@@ -147,7 +147,8 @@ void Transform::Rotate(const XMFLOAT3& eulerAnglesInRadian)
 void Transform::RotateAxis(const XMFLOAT3& axis, float radian)
 {
 	XMVECTOR rotationVec = XMLoadFloat3(&m_Rotation);
-	XMMATRIX R = XMMatrixRotationRollPitchYawFromVector(rotationVec) * XMMatrixRotationAxis(XMLoadFloat3(&axis), radian);
+	XMMATRIX R = XMMatrixRotationRollPitchYawFromVector(rotationVec) *
+		XMMatrixRotationAxis(XMLoadFloat3(&axis), radian);
 	XMFLOAT4X4 rotMatrix;
 	XMStoreFloat4x4(&rotMatrix, R);
 	m_Rotation = GetEulerAnglesFromRotationMatrix(rotMatrix);
@@ -159,7 +160,7 @@ void Transform::RotateAround(const XMFLOAT3& point, const XMFLOAT3& axis, float 
 	XMVECTOR positionVec = XMLoadFloat3(&m_Position);
 	XMVECTOR centerVec = XMLoadFloat3(&point);
 
-	// 以point为原点进行旋转
+	// 以point作为原点进行旋转
 	XMMATRIX RT = XMMatrixRotationRollPitchYawFromVector(rotationVec) * XMMatrixTranslationFromVector(positionVec - centerVec);
 	RT *= XMMatrixRotationAxis(XMLoadFloat3(&axis), radian);
 	RT *= XMMatrixTranslationFromVector(centerVec);
@@ -172,16 +173,16 @@ void Transform::RotateAround(const XMFLOAT3& point, const XMFLOAT3& axis, float 
 void Transform::Translate(const XMFLOAT3& direction, float magnitude)
 {
 	XMVECTOR directionVec = XMVector3Normalize(XMLoadFloat3(&direction));
-	XMVECTOR newPosition = XMVectorMultiplyAdd(XMVectorReplicate(magnitude),directionVec, XMLoadFloat3(&m_Position));
+	XMVECTOR newPosition = XMVectorMultiplyAdd(XMVectorReplicate(magnitude), directionVec, XMLoadFloat3(&m_Position));
 	XMStoreFloat3(&m_Position, newPosition);
 }
 
 void Transform::LookAt(const XMFLOAT3& target, const XMFLOAT3& up)
 {
-	XMMATRIX View = XMMatrixLookAtLH(XMLoadFloat3(&m_Position), XMLoadFloat3(&target),XMLoadFloat3(&up));
-	XMMATRIX InView = XMMatrixInverse(nullptr, View);
+	XMMATRIX View = XMMatrixLookAtLH(XMLoadFloat3(&m_Position), XMLoadFloat3(&target), XMLoadFloat3(&up));
+	XMMATRIX InvView = XMMatrixInverse(nullptr, View);
 	XMFLOAT4X4 rotMatrix;
-	XMStoreFloat4x4(&rotMatrix, InView);
+	XMStoreFloat4x4(&rotMatrix, InvView);
 	m_Rotation = GetEulerAnglesFromRotationMatrix(rotMatrix);
 }
 
@@ -204,7 +205,6 @@ XMFLOAT3 Transform::GetEulerAnglesFromRotationMatrix(const XMFLOAT4X4& rotationM
 	XMFLOAT3 rotation;
 	rotation.z = atan2f(rotationMatrix(0, 1), rotationMatrix(1, 1));
 	rotation.x = atan2f(-rotationMatrix(2, 1), c);
-	rotation.y = atan2(rotationMatrix(2, 0), rotationMatrix(2, 2));
+	rotation.y = atan2f(rotationMatrix(2, 0), rotationMatrix(2, 2));
 	return rotation;
-
 }

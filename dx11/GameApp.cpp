@@ -221,6 +221,17 @@ void GameApp::UpdateScene(float dt)
 	// 退出程序，这里应向窗口发送销毁信息
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape))
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
+
+	// 更新闪电动画
+	static int currBoltFrame = 0;
+	static float frameTime = 0.0f;
+	m_BoltAnim.SetTexture(mBoltSRVs[currBoltFrame].Get());
+	if (frameTime > 1.0f / 60)
+	{
+		currBoltFrame = (currBoltFrame + 1) % 60;
+		frameTime -= 1.0f / 60;
+	}
+	frameTime += dt;
 }
 
 void GameApp::DrawScene()
@@ -265,9 +276,11 @@ void GameApp::DrawScene()
 	m_BasicEffect.SetShadowState(false);
 	m_WoodCrate.SetMaterial(m_WoodCrateMat);
 
-	// ******************
-	// 4. 绘制透明镜面
+	// ***********************
+	// 4. 绘制需要混合的反射闪电动画和透明物体
 	//
+	m_BasicEffect.SetDrawBoltAnimNoDepthTestWithStencil(m_pd3dImmediateContext.Get(), 1);
+	m_BoltAnim.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	// 关闭反射绘制
 	m_BasicEffect.SetReflectionState(false);
@@ -296,6 +309,11 @@ void GameApp::DrawScene()
 
 	m_BasicEffect.SetShadowState(false);		// 阴影关闭
 	m_WoodCrate.SetMaterial(m_WoodCrateMat);
+
+	// ************************
+	// 7. 绘制需要混合的闪电动画
+	m_BasicEffect.SetDrawBoltAnimNoDepthWrite(m_pd3dImmediateContext.Get());
+	m_BoltAnim.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 
 	// ******************
 	// 绘制Direct2D部分
@@ -338,14 +356,27 @@ bool GameApp::InitResource()
 	m_ShadowMat.diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
 	m_ShadowMat.specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 16.0f);
 
+	mBoltSRVs.assign(60, nullptr);
+	wchar_t wstr[50];
+	// 初始化闪电
+	for (int i = 1; i <= 60; ++i)
+	{
+		wsprintf(wstr, L"Texture\\BoltAnim\\Bolt%03d.bmp", i);
+		HR(CreateWICTextureFromFile(m_pd3dDevice.Get(), wstr, nullptr, mBoltSRVs[static_cast<size_t>(i) - 1].GetAddressOf()));
+	}
+
+	m_BoltAnim.SetBuffer(m_pd3dDevice.Get(), Geometry::CreateCylinderNoCap(4.0f, 4.0f));
+	// 抬起高度避免深度缓冲区资源争夺
+	m_BoltAnim.GetTransform().SetPosition(0.0f, 2.01f, 0.0f);
+	m_BoltAnim.SetMaterial(material);
+	
 	// 初始化木盒
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WoodCrate.dds", nullptr, texture.GetAddressOf()));
 	m_WoodCrate.SetBuffer(m_pd3dDevice.Get(), Geometry::CreateBox());
 	// 抬起高度避免深度缓冲区资源争夺
-	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 5.0f);
+	m_WoodCrate.GetTransform().SetPosition(0.0f, 0.01f, 0.0f);
 	m_WoodCrate.SetTexture(texture.Get());
 	m_WoodCrate.SetMaterial(material);
-	
 	
 
 	// 初始化地板
@@ -448,6 +479,7 @@ bool GameApp::InitResource()
 	// ******************
 	// 设置调试对象名
 	//
+	m_BoltAnim.SetDebugObjectName("BoltAnim");
 	m_Floor.SetDebugObjectName("Floor");
 	m_Mirror.SetDebugObjectName("Mirror");
 	m_Walls[0].SetDebugObjectName("Walls[0]");
