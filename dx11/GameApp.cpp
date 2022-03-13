@@ -104,7 +104,7 @@ void GameApp::UpdateScene(float dt)
 	auto cam3rd = std::dynamic_pointer_cast<ThirdPersonCamera>(m_pCamera);
 	auto cam1st = std::dynamic_pointer_cast<FirstPersonCamera>(m_pCamera);
 
-	if (m_CameraMode == CameraMode::Free)
+	if (m_CameraMode == CameraMode::FirstPerson || m_CameraMode == CameraMode::Free)
 	{
 		// ******************
 		// 第一人称/自由摄像机的操作
@@ -112,16 +112,36 @@ void GameApp::UpdateScene(float dt)
 
 		// 方向移动
 		if (keyState.IsKeyDown(Keyboard::W))
-			cam1st->MoveForward(dt * 6.0f);
+		{
+			if (m_CameraMode == CameraMode::FirstPerson)
+				cam1st->Walk(dt * 6.0f);
+			else
+				cam1st->MoveForward(dt * 6.0f);
+		}
 		if (keyState.IsKeyDown(Keyboard::S))
-			cam1st->MoveForward(dt * -6.0f);
+		{
+			if (m_CameraMode == CameraMode::FirstPerson)
+				cam1st->Walk(dt * -6.0f);
+			else
+				cam1st->MoveForward(dt * -3.0f);
+		}
 		if (keyState.IsKeyDown(Keyboard::A))
 			cam1st->Strafe(dt * -6.0f);
 		if (keyState.IsKeyDown(Keyboard::D))
 			cam1st->Strafe(dt * 6.0f);
 
-		cam1st->Pitch(mouseState.y * 0.002f);
-		cam1st->RotateY(mouseState.x * 0.002f);
+		// 将位置限制在[-8.9f, 8.9f]的区域内
+		// 不允许穿地
+		XMFLOAT3 adjustedPos;
+		XMStoreFloat3(&adjustedPos, XMVectorClamp(cam1st->GetPositionXM(), XMVectorSet(-8.9f, 0.0f, -8.9f, 0.0f), XMVectorReplicate(8.9f)));
+		cam1st->SetPosition(adjustedPos);
+
+		// 仅在第一人称模式移动箱子
+		if (m_CameraMode == CameraMode::FirstPerson)
+			m_WoodCrate.GetTransform().SetPosition(adjustedPos);
+
+		cam1st->Pitch(mouseState.y * dt * 1.25f);
+		cam1st->RotateY(mouseState.x * dt * 1.25f);
 	}
 	else if (m_CameraMode == CameraMode::ThirdPerson)
 	{
@@ -135,8 +155,8 @@ void GameApp::UpdateScene(float dt)
 		// 在鼠标没进入窗口前仍为ABSOLUTE模式
 		if (mouseState.positionMode == Mouse::MODE_RELATIVE)
 		{
-			cam3rd->RotateX(mouseState.y * 0.002f);
-			cam3rd->RotateY(mouseState.x * 0.002f);
+			cam3rd->RotateX(mouseState.y * dt * 1.25f);
+			cam3rd->RotateY(mouseState.x * dt * 1.25f);
 			cam3rd->Approach(-mouseState.scrollWheelValue / 120 * 1.0f);
 		}
 	}
@@ -150,7 +170,6 @@ void GameApp::UpdateScene(float dt)
 	// ******************
 	// 摄像机模式切换
 	//
-
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1) && m_CameraMode != CameraMode::FirstPerson)
 	{
 		if (!cam1st)
