@@ -3,10 +3,10 @@
 // 像素着色器(3D)
 float4 PS(VertexPosHWNormalTex pIn) : SV_Target
 {
-    // 提前进行Alpha裁剪，对不符合要求的像素可以避免后续运算
-    float4 texColor = g_Tex.Sample(g_SamLinear, pIn.Tex);
+    // 提前进行裁剪，对不符合要求的像素可以避免后续运算
+    float4 texColor = g_Tex.Sample(g_Sam, pIn.Tex);
     clip(texColor.a - 0.1f);
-    
+
     // 标准化法向量
     pIn.NormalW = normalize(pIn.NormalW);
 
@@ -21,7 +21,8 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
     float4 D = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 S = float4(0.0f, 0.0f, 0.0f, 0.0f);
     int i;
-    
+
+
     [unroll]
     for (i = 0; i < 5; ++i)
     {
@@ -36,6 +37,9 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
         diffuse += D;
         spec += S;
     }
+        
+    
+
     
     // 若当前在绘制反射物体，需要对光照进行反射矩阵变换
     PointLight pointLight;
@@ -54,6 +58,8 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
         spec += S;
     }
         
+    
+	
     SpotLight spotLight;
     // 若当前在绘制反射物体，需要对光照进行反射矩阵变换
     [unroll]
@@ -74,7 +80,7 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
         
     
 
-    
+	
     float4 litColor = texColor * (ambient + diffuse) + spec;
     litColor.a = texColor.a * g_Material.Diffuse.a;
     return litColor;
