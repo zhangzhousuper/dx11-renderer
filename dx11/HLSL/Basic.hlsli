@@ -1,90 +1,53 @@
 #include "LightHelper.hlsli"
 
-Texture2D g_Tex : register(t0);
-SamplerState g_Sam : register(s0);
-
-
-
-cbuffer CBChangesEveryDrawing : register(b0)
+cbuffer CBChangesEveryFrame : register(b0)
 {
     matrix g_World;
     matrix g_WorldInvTranspose;
-    Material g_Material;
 }
 
-cbuffer CBDrawingStates : register(b1)
-{
-    int g_IsReflection;
-    int g_IsShadow;
-}
-
-cbuffer CBChangesEveryFrame : register(b2)
-{
-    matrix g_View;
-    float3 g_EyePosW;
-}
-
-cbuffer CBChangesOnResize : register(b3)
+cbuffer CBChangesOnResize : register(b1)
 {
     matrix g_Proj;
 }
 
-cbuffer CBChangesRarely : register(b4)
+cbuffer CBChangesRarely : register(b2)
 {
-    matrix g_Reflection;
-    matrix g_Shadow;
-    matrix g_RefShadow;
     DirectionalLight g_DirLight[5];
     PointLight g_PointLight[5];
     SpotLight g_SpotLight[5];
+    Material g_Material;
+    matrix g_View;
+    float3 g_EyePosW;
+    float g_CylinderHeight;
 }
 
 
+struct VertexPosColor
+{
+    float3 PosL : POSITION;
+    float4 Color : COLOR;
+};
 
-struct VertexPosNormalTex
+struct VertexPosHColor
+{
+    float4 PosH : SV_POSITION;
+    float4 Color : COLOR;
+};
+
+
+struct VertexPosNormalColor
 {
     float3 PosL : POSITION;
     float3 NormalL : NORMAL;
-    float2 Tex : TEXCOORD;
+    float4 Color : COLOR;
 };
 
-struct VertexPosTex
-{
-    float3 PosL : POSITION;
-    float2 Tex : TEXCOORD;
-};
-
-struct VertexPosHWNormalTex
+struct VertexPosHWNormalColor
 {
     float4 PosH : SV_POSITION;
-    float3 PosW : POSITION; 
-    float3 NormalW : NORMAL; 
-    float2 Tex : TEXCOORD;
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float4 Color : COLOR;
 };
-
-struct VertexPosHTex
-{
-    float4 PosH : SV_POSITION;
-    float2 Tex : TEXCOORD;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

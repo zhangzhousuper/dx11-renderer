@@ -1,4 +1,4 @@
-﻿#ifndef LIGHTHELPER_H
+#ifndef LIGHTHELPER_H
 #define LIGHTHELPER_H
 
 #include <cstring>
@@ -69,7 +69,7 @@ struct SpotLight
 	SpotLight(const DirectX::XMFLOAT4& _ambient, const DirectX::XMFLOAT4& _diffuse, const DirectX::XMFLOAT4& _specular,
 		const DirectX::XMFLOAT3& _position, float _range, const DirectX::XMFLOAT3& _direction,
 		float _spot, const DirectX::XMFLOAT3& _att) :
-		ambient(_ambient), diffuse(_diffuse), specular(_specular),
+		ambient(_ambient), diffuse(_diffuse), specular(_specular), 
 		position(_position), range(_range), direction(_direction), spot(_spot), att(_att), pad() {}
 
 	DirectX::XMFLOAT4 ambient;

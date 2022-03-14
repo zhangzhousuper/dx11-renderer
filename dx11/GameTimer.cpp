@@ -6,8 +6,8 @@
 #include "GameTimer.h"
 
 GameTimer::GameTimer()
-	: m_SecondsPerCount(0.0), m_DeltaTime(-1.0), m_BaseTime(0), m_StopTime(0),
-	m_PausedTime(0), m_PrevTime(0), m_CurrTime(0), m_Stopped(false)
+: m_SecondsPerCount(0.0), m_DeltaTime(-1.0), m_BaseTime(0), m_StopTime(0),
+  m_PausedTime(0), m_PrevTime(0), m_CurrTime(0), m_Stopped(false)
 {
 	__int64 countsPerSec;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
@@ -27,9 +27,9 @@ float GameTimer::TotalTime()const
 	// ----*---------------*-----------------*------------*------------*------> time
 	//  m_BaseTime       m_StopTime        startTime     m_StopTime    m_CurrTime
 
-	if (m_Stopped)
+	if( m_Stopped )
 	{
-		return (float)(((m_StopTime - m_PausedTime) - m_BaseTime) * m_SecondsPerCount);
+		return (float)(((m_StopTime - m_PausedTime)-m_BaseTime)*m_SecondsPerCount);
 	}
 
 	// The distance m_CurrTime - m_BaseTime includes paused time,
@@ -41,10 +41,10 @@ float GameTimer::TotalTime()const
 	//                     |<--paused time-->|
 	// ----*---------------*-----------------*------------*------> time
 	//  m_BaseTime       m_StopTime        startTime     m_CurrTime
-
+	
 	else
 	{
-		return (float)(((m_CurrTime - m_PausedTime) - m_BaseTime) * m_SecondsPerCount);
+		return (float)(((m_CurrTime-m_PausedTime)-m_BaseTime)*m_SecondsPerCount);
 	}
 }
 
@@ -62,7 +62,7 @@ void GameTimer::Reset()
 	m_PrevTime = currTime;
 	m_StopTime = 0;
 	m_PausedTime = 0;	// 涉及到多次Reset的话需要将其归0
-	m_Stopped = false;
+	m_Stopped  = false;
 }
 
 void GameTimer::Start()
@@ -77,31 +77,31 @@ void GameTimer::Start()
 	// ----*---------------*-----------------*------------> time
 	//  m_BaseTime       m_StopTime        startTime     
 
-	if (m_Stopped)
+	if( m_Stopped )
 	{
-		m_PausedTime += (startTime - m_StopTime);
+		m_PausedTime += (startTime - m_StopTime);	
 
 		m_PrevTime = startTime;
 		m_StopTime = 0;
-		m_Stopped = false;
+		m_Stopped  = false;
 	}
 }
 
 void GameTimer::Stop()
 {
-	if (!m_Stopped)
+	if( !m_Stopped )
 	{
 		__int64 currTime;
 		QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
 
 		m_StopTime = currTime;
-		m_Stopped = true;
+		m_Stopped  = true;
 	}
 }
 
 void GameTimer::Tick()
 {
-	if (m_Stopped)
+	if( m_Stopped )
 	{
 		m_DeltaTime = 0.0;
 		return;
@@ -112,12 +112,12 @@ void GameTimer::Tick()
 	m_CurrTime = currTime;
 
 	// Time difference between this frame and the previous.
-	m_DeltaTime = (m_CurrTime - m_PrevTime) * m_SecondsPerCount;
+	m_DeltaTime = (m_CurrTime - m_PrevTime)*m_SecondsPerCount;
 
 	// Prepare for next frame.
 	m_PrevTime = m_CurrTime;
 
-	if (m_DeltaTime < 0.0)
+	if(m_DeltaTime < 0.0)
 	{
 		m_DeltaTime = 0.0;
 	}

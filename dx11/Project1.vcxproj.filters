@@ -126,12 +126,18 @@
     </None>
     <None Include="HLSL\LightHelper.hlsli" />
     <None Include="HLSL\Basic.hlsli" />
+    <None Include="HLSL\Light.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="HLSL\Basic_VS_2D.hlsl" />
-    <FxCompile Include="HLSL\Basic_PS_2D.hlsl" />
-    <FxCompile Include="HLSL\Basic_VS_3D.hlsl" />
-    <FxCompile Include="HLSL\Basic_PS_3D.hlsl" />
+    <FxCompile Include="HLSL\Cylinder_GS.hlsl" />
+    <FxCompile Include="HLSL\Cylinder_PS.hlsl" />
+    <FxCompile Include="HLSL\Cylinder_VS.hlsl" />
+    <FxCompile Include="HLSL\Normal_GS.hlsl" />
+    <FxCompile Include="HLSL\Normal_PS.hlsl" />
+    <FxCompile Include="HLSL\Normal_VS.hlsl" />
+    <FxCompile Include="HLSL\Triangle_GS.hlsl" />
+    <FxCompile Include="HLSL\Triangle_PS.hlsl" />
+    <FxCompile Include="HLSL\Triangle_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />

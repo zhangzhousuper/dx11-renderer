@@ -115,7 +115,7 @@ public:
 	}
 
 	State           mState;
-	Keyboard* mOwner;
+	Keyboard*       mOwner;
 
 	static Keyboard::Impl* s_keyboard;
 };

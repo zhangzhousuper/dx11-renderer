@@ -214,7 +214,7 @@ public:
 
 	State           mState;
 
-	Mouse* mOwner;
+	Mouse*          mOwner;
 
 	static Mouse::Impl* s_mouse;
 
