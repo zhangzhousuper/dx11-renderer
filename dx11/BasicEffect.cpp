@@ -38,8 +38,10 @@ public:
 		SpotLight spotLight[BasicEffect::maxLights];
 		Material material;
 		DirectX::XMMATRIX view;
+		DirectX::XMFLOAT3 sphereCenter;
+		float sphereRadius;
 		DirectX::XMFLOAT3 eyePos;
-		float cylinderHeight;
+		float pad;
 	};
 
 public:
@@ -56,17 +58,27 @@ public:
 	std::vector<CBufferBase*> m_pCBuffers;					    // 统一管理上面所有的常量缓冲区
 
 
+	ComPtr<ID3D11VertexShader> m_pTriangleSOVS;
+	ComPtr<ID3D11GeometryShader> m_pTriangleSOGS;
+
 	ComPtr<ID3D11VertexShader> m_pTriangleVS;
 	ComPtr<ID3D11PixelShader> m_pTrianglePS;
-	ComPtr<ID3D11GeometryShader> m_pTriangleGS;
 
-	ComPtr<ID3D11VertexShader> m_pCylinderVS;
-	ComPtr<ID3D11PixelShader> m_pCylinderPS;
-	ComPtr<ID3D11GeometryShader> m_pCylinderGS;
+	ComPtr<ID3D11VertexShader> m_pSphereSOVS;
+	ComPtr<ID3D11GeometryShader> m_pSphereSOGS;
+
+	ComPtr<ID3D11VertexShader> m_pSphereVS;
+	ComPtr<ID3D11PixelShader> m_pSpherePS;
+
+	ComPtr<ID3D11VertexShader> m_pSnowSOVS;
+	ComPtr<ID3D11GeometryShader> m_pSnowSOGS;
+
+	ComPtr<ID3D11VertexShader> m_pSnowVS;
+	ComPtr<ID3D11PixelShader> m_pSnowPS;
 
 	ComPtr<ID3D11VertexShader> m_pNormalVS;
-	ComPtr<ID3D11PixelShader> m_pNormalPS;
 	ComPtr<ID3D11GeometryShader> m_pNormalGS;
+	ComPtr<ID3D11PixelShader> m_pNormalPS;
 
 	ComPtr<ID3D11InputLayout> m_pVertexPosColorLayout;			// VertexPosColor输入布局
 	ComPtr<ID3D11InputLayout> m_pVertexPosNormalColorLayout;	// VertexPosNormalColor输入布局
@@ -126,47 +138,98 @@ bool BasicEffect::InitAll(ID3D11Device * device)
 	if (!RenderStates::IsInit())
 		throw std::exception("RenderStates need to be initialized first!");
 
+	const D3D11_SO_DECLARATION_ENTRY posColorLayout[2] = {
+		{ 0, "POSITION", 0, 0, 3, 0 },
+		{ 0, "COLOR", 0, 0, 4, 0 }
+	};
+
+	const D3D11_SO_DECLARATION_ENTRY posNormalColorLayout[3] = {
+		{ 0, "POSITION", 0, 0, 3, 0 },
+		{ 0, "NORMAL", 0, 0, 3, 0 },
+		{ 0, "COLOR", 0, 0, 4, 0 }
+	};
+
+	UINT stridePosColor = sizeof(VertexPosColor);
+	UINT stridePosNormalColor = sizeof(VertexPosNormalColor);
+
 	ComPtr<ID3DBlob> blob;
 
-	// 创建顶点着色器和顶点布局
-	HR(CreateShaderFromFile(L"HLSL\\Triangle_VS.cso", L"HLSL\\Triangle_VS.hlsl", "VS", "vs_5_0", blob.GetAddressOf()));
+	// ******************
+	// 流输出分裂三角形
+	//
+	HR(CreateShaderFromFile(L"HLSL\\TriangleSO_VS.cso", L"HLSL\\TriangleSO_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pTriangleSOVS.GetAddressOf()));
+	// 创建顶点输入布局
+	HR(device->CreateInputLayout(VertexPosColor::inputLayout, ARRAYSIZE(VertexPosColor::inputLayout), blob->GetBufferPointer(),
+		blob->GetBufferSize(), pImpl->m_pVertexPosColorLayout.GetAddressOf()));
+	HR(CreateShaderFromFile(L"HLSL\\TriangleSO_GS.cso", L"HLSL\\TriangleSO_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), posColorLayout, ARRAYSIZE(posColorLayout),
+		&stridePosColor, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, pImpl->m_pTriangleSOGS.GetAddressOf()));
+
+	// ******************
+	// 绘制分形三角形
+	//
+	HR(CreateShaderFromFile(L"HLSL\\Triangle_VS.cso", L"HLSL\\Triangle_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pTriangleVS.GetAddressOf()));
-	HR(device->CreateInputLayout(VertexPosColor::inputLayout, ARRAYSIZE(VertexPosColor::inputLayout),
-		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexPosColorLayout.GetAddressOf()));
-
-	HR(CreateShaderFromFile(L"HLSL\\Cylinder_VS.cso", L"HLSL\\Cylinder_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pCylinderVS.GetAddressOf()));
-	HR(device->CreateInputLayout(VertexPosNormalColor::inputLayout, ARRAYSIZE(VertexPosNormalColor::inputLayout),
-		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexPosNormalColorLayout.GetAddressOf()));
-
-	HR(CreateShaderFromFile(L"HLSL\\Normal_VS.cso", L"HLSL\\Normal_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalVS.GetAddressOf()));
-
-	// 创建像素着色器
 	HR(CreateShaderFromFile(L"HLSL\\Triangle_PS.cso", L"HLSL\\Triangle_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pTrianglePS.GetAddressOf()));
 
-	HR(CreateShaderFromFile(L"HLSL\\Cylinder_PS.cso", L"HLSL\\Cylinder_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pCylinderPS.GetAddressOf()));
 
+	// ******************
+	// 流输出分形球体
+	//
+	HR(CreateShaderFromFile(L"HLSL\\SphereSO_VS.cso", L"HLSL\\SphereSO_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pSphereSOVS.GetAddressOf()));
+	// 创建顶点输入布局
+	HR(device->CreateInputLayout(VertexPosNormalColor::inputLayout, ARRAYSIZE(VertexPosNormalColor::inputLayout), blob->GetBufferPointer(),
+		blob->GetBufferSize(), pImpl->m_pVertexPosNormalColorLayout.GetAddressOf()));
+	HR(CreateShaderFromFile(L"HLSL\\SphereSO_GS.cso", L"HLSL\\SphereSO_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), posNormalColorLayout, ARRAYSIZE(posNormalColorLayout),
+		&stridePosNormalColor, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, pImpl->m_pSphereSOGS.GetAddressOf()));
+
+	// ******************
+	// 绘制球体
+	//
+	HR(CreateShaderFromFile(L"HLSL\\Sphere_VS.cso", L"HLSL\\Sphere_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pSphereVS.GetAddressOf()));
+	HR(CreateShaderFromFile(L"HLSL\\Sphere_PS.cso", L"HLSL\\Sphere_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pSpherePS.GetAddressOf()));
+
+
+	// ******************
+	// 流输出分形雪花
+	//
+	HR(CreateShaderFromFile(L"HLSL\\SnowSO_VS.cso", L"HLSL\\SnowSO_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pSnowSOVS.GetAddressOf()));
+	HR(CreateShaderFromFile(L"HLSL\\SnowSO_GS.cso", L"HLSL\\SnowSO_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), posColorLayout, ARRAYSIZE(posColorLayout),
+		&stridePosColor, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, pImpl->m_pSnowSOGS.GetAddressOf()));
+
+	// ******************
+	// 绘制雪花
+	//
+	HR(CreateShaderFromFile(L"HLSL\\Snow_VS.cso", L"HLSL\\Snow_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pSnowVS.GetAddressOf()));
+	HR(CreateShaderFromFile(L"HLSL\\Snow_PS.cso", L"HLSL\\Snow_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pSnowPS.GetAddressOf()));
+
+
+	// ******************
+	// 绘制法向量
+	//
+	HR(CreateShaderFromFile(L"HLSL\\Normal_VS.cso", L"HLSL\\Normal_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalVS.GetAddressOf()));
+	HR(CreateShaderFromFile(L"HLSL\\Normal_GS.cso", L"HLSL\\Normal_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalGS.GetAddressOf()));
 	HR(CreateShaderFromFile(L"HLSL\\Normal_PS.cso", L"HLSL\\Normal_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalPS.GetAddressOf()));
 
-	// 创建几何着色器
-	HR(CreateShaderFromFile(L"HLSL\\Triangle_GS.cso", L"HLSL\\Triangle_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pTriangleGS.GetAddressOf()));
-
-	HR(CreateShaderFromFile(L"HLSL\\Cylinder_GS.cso", L"HLSL\\Cylinder_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pCylinderGS.GetAddressOf()));
-
-	HR(CreateShaderFromFile(L"HLSL\\Normal_GS.cso", L"HLSL\\Normal_GS.hlsl", "GS", "gs_5_0", blob.ReleaseAndGetAddressOf()));
-	HR(device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalGS.GetAddressOf()));
 
 
 	pImpl->m_pCBuffers.assign({
-		&pImpl->m_CBFrame, 
-		&pImpl->m_CBOnResize, 
-		&pImpl->m_CBRarely});
+		&pImpl->m_CBFrame,
+		&pImpl->m_CBOnResize,
+		&pImpl->m_CBRarely });
 
 	// 创建常量缓冲区
 	for (auto& pBuffer : pImpl->m_pCBuffers)
@@ -174,45 +237,133 @@ bool BasicEffect::InitAll(ID3D11Device * device)
 		HR(pBuffer->CreateBuffer(device));
 	}
 
-	// 设置调试对象名
-	D3D11SetDebugObjectName(pImpl->m_pVertexPosColorLayout.Get(), "VertexPosColorLayout");
-	D3D11SetDebugObjectName(pImpl->m_pVertexPosNormalColorLayout.Get(), "VertexPosNormalColorLayout");
-	D3D11SetDebugObjectName(pImpl->m_pCBuffers[0]->cBuffer.Get(), "CBFrame");
-	D3D11SetDebugObjectName(pImpl->m_pCBuffers[1]->cBuffer.Get(), "CBOnResize");
-	D3D11SetDebugObjectName(pImpl->m_pCBuffers[2]->cBuffer.Get(), "CBRarely");
-	D3D11SetDebugObjectName(pImpl->m_pTriangleVS.Get(), "Triangle_VS");
-	D3D11SetDebugObjectName(pImpl->m_pTriangleGS.Get(), "Triangle_GS");
-	D3D11SetDebugObjectName(pImpl->m_pTrianglePS.Get(), "Triangle_PS");
-	D3D11SetDebugObjectName(pImpl->m_pCylinderVS.Get(), "Cylinder_VS");
-	D3D11SetDebugObjectName(pImpl->m_pCylinderGS.Get(), "Cylinder_GS");
-	D3D11SetDebugObjectName(pImpl->m_pCylinderPS.Get(), "Cylinder_PS");
-	D3D11SetDebugObjectName(pImpl->m_pNormalVS.Get(), "Normal_VS");
-	D3D11SetDebugObjectName(pImpl->m_pNormalGS.Get(), "Normal_GS");
-	D3D11SetDebugObjectName(pImpl->m_pNormalPS.Get(), "Normal_PS");
-
-
 	return true;
 }
 
 void BasicEffect::SetRenderSplitedTriangle(ID3D11DeviceContext * deviceContext)
 {
+	// 先恢复流输出默认设置，防止顶点缓冲区同时绑定在输入和输出阶段
+	UINT stride = sizeof(VertexPosColor);
+	UINT offset = 0;
+	ID3D11Buffer* nullBuffer = nullptr;
+	deviceContext->SOSetTargets(1, &nullBuffer, &offset);
+
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->IASetInputLayout(pImpl->m_pVertexPosColorLayout.Get());
 	deviceContext->VSSetShader(pImpl->m_pTriangleVS.Get(), nullptr, 0);
-	deviceContext->GSSetShader(pImpl->m_pTriangleGS.Get(), nullptr, 0);
+
+	deviceContext->GSSetShader(nullptr, nullptr, 0);
+
 	deviceContext->RSSetState(nullptr);
 	deviceContext->PSSetShader(pImpl->m_pTrianglePS.Get(), nullptr, 0);
 
 }
 
-void BasicEffect::SetRenderCylinderNoCap(ID3D11DeviceContext * deviceContext)
+void BasicEffect::SetRenderSplitedSnow(ID3D11DeviceContext* deviceContext)
 {
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	// 先恢复流输出默认设置，防止顶点缓冲区同时绑定在输入和输出阶段
+	UINT stride = sizeof(VertexPosColor);
+	UINT offset = 0;
+	ID3D11Buffer* nullBuffer = nullptr;
+	deviceContext->SOSetTargets(1, &nullBuffer, &offset);
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	deviceContext->IASetInputLayout(pImpl->m_pVertexPosColorLayout.Get());
+	deviceContext->VSSetShader(pImpl->m_pSnowVS.Get(), nullptr, 0);
+
+	deviceContext->GSSetShader(nullptr, nullptr, 0);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetShader(pImpl->m_pSnowPS.Get(), nullptr, 0);
+}
+
+void BasicEffect::SetRenderSplitedSphere(ID3D11DeviceContext* deviceContext)
+{
+	// 先恢复流输出默认设置，防止顶点缓冲区同时绑定在输入和输出阶段
+	UINT stride = sizeof(VertexPosColor);
+	UINT offset = 0;
+	ID3D11Buffer* nullBuffer = nullptr;
+	deviceContext->SOSetTargets(1, &nullBuffer, &offset);
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->IASetInputLayout(pImpl->m_pVertexPosNormalColorLayout.Get());
-	deviceContext->VSSetShader(pImpl->m_pCylinderVS.Get(), nullptr, 0);
-	deviceContext->GSSetShader(pImpl->m_pCylinderGS.Get(), nullptr, 0);
-	deviceContext->RSSetState(RenderStates::RSNoCull.Get());
-	deviceContext->PSSetShader(pImpl->m_pCylinderPS.Get(), nullptr, 0);
+	deviceContext->VSSetShader(pImpl->m_pSphereVS.Get(), nullptr, 0);
+
+	deviceContext->GSSetShader(nullptr, nullptr, 0);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetShader(pImpl->m_pSpherePS.Get(), nullptr, 0);
+
+}
+
+void BasicEffect::SetStreamOutputSplitedTriangle(ID3D11DeviceContext* deviceContext, ID3D11Buffer* vertexBufferIn, ID3D11Buffer* vertexBufferOut)
+{
+	// 先恢复流输出默认设置，防止顶点缓冲区同时绑定在输入和输出阶段
+	UINT stride = sizeof(VertexPosColor);
+	UINT offset = 0;
+	ID3D11Buffer* nullBuffer = nullptr;
+	deviceContext->SOSetTargets(1, &nullBuffer, &offset);
+
+	deviceContext->IASetInputLayout(nullptr);
+	deviceContext->SOSetTargets(0, nullptr, &offset);
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetInputLayout(pImpl->m_pVertexPosColorLayout.Get());
+
+	deviceContext->IASetVertexBuffers(0, 1, &vertexBufferIn, &stride, &offset);
+
+	deviceContext->VSSetShader(pImpl->m_pTriangleSOVS.Get(), nullptr, 0);
+	deviceContext->GSSetShader(pImpl->m_pTriangleSOGS.Get(), nullptr, 0);
+
+	deviceContext->SOSetTargets(1, &vertexBufferOut, &offset);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetShader(nullptr, nullptr, 0);
+
+}
+
+void BasicEffect::SetStreamOutputSplitedSnow(ID3D11DeviceContext* deviceContext, ID3D11Buffer* vertexBufferIn, ID3D11Buffer* vertexBufferOut)
+{
+	// 先恢复流输出默认设置，防止顶点缓冲区同时绑定在输入和输出阶段
+	UINT stride = sizeof(VertexPosColor);
+	UINT offset = 0;
+	ID3D11Buffer* nullBuffer = nullptr;
+	deviceContext->SOSetTargets(1, &nullBuffer, &offset);
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	deviceContext->IASetInputLayout(pImpl->m_pVertexPosColorLayout.Get());
+	deviceContext->IASetVertexBuffers(0, 1, &vertexBufferIn, &stride, &offset);
+
+	deviceContext->VSSetShader(pImpl->m_pSnowSOVS.Get(), nullptr, 0);
+	deviceContext->GSSetShader(pImpl->m_pSnowSOGS.Get(), nullptr, 0);
+
+	deviceContext->SOSetTargets(1, &vertexBufferOut, &offset);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetShader(nullptr, nullptr, 0);
+
+}
+
+void BasicEffect::SetStreamOutputSplitedSphere(ID3D11DeviceContext* deviceContext, ID3D11Buffer* vertexBufferIn, ID3D11Buffer* vertexBufferOut)
+{
+	// 先恢复流输出默认设置，防止顶点缓冲区同时绑定在输入和输出阶段
+	UINT stride = sizeof(VertexPosNormalColor);
+	UINT offset = 0;
+	ID3D11Buffer* nullBuffer = nullptr;
+	deviceContext->SOSetTargets(1, &nullBuffer, &offset);
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetInputLayout(pImpl->m_pVertexPosNormalColorLayout.Get());
+
+	deviceContext->IASetVertexBuffers(0, 1, &vertexBufferIn, &stride, &offset);
+
+	deviceContext->VSSetShader(pImpl->m_pSphereSOVS.Get(), nullptr, 0);
+	deviceContext->GSSetShader(pImpl->m_pSphereSOGS.Get(), nullptr, 0);
+
+	deviceContext->SOSetTargets(1, &vertexBufferOut, &offset);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetShader(nullptr, nullptr, 0);
 
 }
 
@@ -286,10 +437,17 @@ void BasicEffect::SetEyePos(const DirectX::XMFLOAT3& eyePos)
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
-void BasicEffect::SetCylinderHeight(float height)
+void BasicEffect::SetSphereCenter(const DirectX::XMFLOAT3& center)
 {
 	auto& cBuffer = pImpl->m_CBRarely;
-	cBuffer.data.cylinderHeight = height;
+	cBuffer.data.sphereCenter = center;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetSphereRadius(float radius)
+{
+	auto& cBuffer = pImpl->m_CBRarely;
+	cBuffer.data.sphereRadius = radius;
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 
