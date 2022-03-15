@@ -1,5 +1,5 @@
 //***************************************************************************************
-// GameObject.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// GameObject.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 简易游戏对象
@@ -53,7 +53,7 @@ private:
 };
 
 template<class VertexType, class IndexType>
-inline void GameObject::SetBuffer(ID3D11Device * device, const Geometry::MeshData<VertexType, IndexType>& meshData)
+inline void GameObject::SetBuffer(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData)
 {
 	// 释放旧资源
 	m_pVertexBuffer.Reset();
@@ -89,7 +89,7 @@ inline void GameObject::SetBuffer(ID3D11Device * device, const Geometry::MeshDat
 	InitData.pSysMem = meshData.indexVec.data();
 	device->CreateBuffer(&ibd, &InitData, m_pIndexBuffer.GetAddressOf());
 
-	
+
 }
 
 

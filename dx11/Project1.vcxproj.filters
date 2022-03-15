@@ -129,22 +129,11 @@
     <None Include="HLSL\Light.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="HLSL\Normal_GS.hlsl" />
-    <FxCompile Include="HLSL\Normal_PS.hlsl" />
-    <FxCompile Include="HLSL\Normal_VS.hlsl" />
-    <FxCompile Include="HLSL\Triangle_GS.hlsl" />
-    <FxCompile Include="HLSL\Triangle_PS.hlsl" />
-    <FxCompile Include="HLSL\Triangle_VS.hlsl" />
-    <FxCompile Include="HLSL\Snow_PS.hlsl" />
-    <FxCompile Include="HLSL\Snow_VS.hlsl" />
-    <FxCompile Include="HLSL\SnowSO_GS.hlsl" />
-    <FxCompile Include="HLSL\SnowSO_VS.hlsl" />
-    <FxCompile Include="HLSL\Sphere_PS.hlsl" />
-    <FxCompile Include="HLSL\Sphere_VS.hlsl" />
-    <FxCompile Include="HLSL\SphereSO_GS.hlsl" />
-    <FxCompile Include="HLSL\SphereSO_VS.hlsl" />
-    <FxCompile Include="HLSL\TriangleSO_GS.hlsl" />
-    <FxCompile Include="HLSL\TriangleSO_VS.hlsl" />
+    <FxCompile Include="HLSL\Billboard_GS.hlsl" />
+    <FxCompile Include="HLSL\Basic_PS.hlsl" />
+    <FxCompile Include="HLSL\Basic_VS.hlsl" />
+    <FxCompile Include="HLSL\Billboard_PS.hlsl" />
+    <FxCompile Include="HLSL\Billboard_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />
