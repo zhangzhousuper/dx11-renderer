@@ -235,7 +235,7 @@ bool GameApp::InitResource()
 	CreateRandomTrees();
 
 	// 初始化地面
-	m_ObjReader.Read(L"..\\Model\\ground_20.mbo", L"..\\Model\\ground_20.obj");
+	m_ObjReader.Read(L"Model\\ground_20.mbo", L"Model\\ground_20.obj");
 	m_Ground.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
 	// ******************
@@ -282,7 +282,7 @@ void GameApp::CreateRandomTrees()
 {
 	srand((unsigned)time(nullptr));
 	// 初始化树
-	m_ObjReader.Read(L"..\\Model\\tree.mbo", L"..\\Model\\tree.obj");
+	m_ObjReader.Read(L"Model\\tree.mbo", L"Model\\tree.obj");
 	m_Trees.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 	XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);
 	

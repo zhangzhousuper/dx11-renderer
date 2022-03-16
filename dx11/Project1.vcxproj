@@ -123,7 +123,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;dxguid.lib;D3DCompiler.lib;winmm.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;d3d11.lib;dxgi.lib;winmm.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -229,9 +229,6 @@
   <ItemGroup>
     <Image Include="Model\grass.dds" />
     <Image Include="Model\house.png" />
-    <Image Include="Model\tree_00.dds" />
-    <Image Include="Model\tree_01.dds" />
-    <Image Include="Model\tree_02.dds" />
     <Image Include="Texture\brick.dds" />
     <Image Include="Texture\bricks.dds" />
     <Image Include="Texture\checkboard.dds" />
@@ -242,12 +239,6 @@
     <Image Include="Texture\water.dds" />
     <Image Include="Texture\WireFence.dds" />
     <Image Include="Texture\WoodCrate.dds" />
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="Model\ground_20.obj" />
-    <Object Include="Model\ground_24.obj" />
-    <Object Include="Model\house.obj" />
-    <Object Include="Model\tree.obj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

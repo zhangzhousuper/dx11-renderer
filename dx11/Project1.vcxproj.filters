@@ -171,14 +171,5 @@
     <Image Include="Model\house.png">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="Model\tree_00.dds" />
-    <Image Include="Model\tree_01.dds" />
-    <Image Include="Model\tree_02.dds" />
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="Model\ground_20.obj" />
-    <Object Include="Model\ground_24.obj" />
-    <Object Include="Model\house.obj" />
-    <Object Include="Model\tree.obj" />
   </ItemGroup>
 </Project>
