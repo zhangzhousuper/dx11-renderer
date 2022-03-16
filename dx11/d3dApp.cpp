@@ -3,10 +3,6 @@
 #include "DXTrace.h"
 #include <sstream>
 
-#if USE_IMGUI
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-#endif
-
 namespace
 {
 	// This is just used to forward Windows messages from a global window
@@ -25,9 +21,9 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance),
-	m_MainWndCaption(L"Tree Billboard"),
-	m_ClientWidth(1280),
-	m_ClientHeight(720),
+	m_MainWndCaption(L"Instancing and Frustum Culling"),
+	m_ClientWidth(800),
+	m_ClientHeight(600),
 	m_hMainWnd(nullptr),
 	m_AppPaused(false),
 	m_Minimized(false),
@@ -50,17 +46,11 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	g_pd3dApp = this;
 }
 
-
 D3DApp::~D3DApp()
 {
 	// 恢复所有默认设定
 	if (m_pd3dImmediateContext)
 		m_pd3dImmediateContext->ClearState();
-#ifdef USE_IMGUI
-	ImGui_ImplDX11_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-#endif
 }
 
 HINSTANCE D3DApp::AppInst()const
@@ -98,11 +88,6 @@ int D3DApp::Run()
 			if (!m_AppPaused)
 			{
 				CalculateFrameStats();
-#ifdef USE_IMGUI
-				ImGui_ImplDX11_NewFrame();
-				ImGui_ImplWin32_NewFrame();
-				ImGui::NewFrame();
-#endif
 				UpdateScene(m_Timer.DeltaTime());
 				DrawScene();
 			}
@@ -118,6 +103,9 @@ int D3DApp::Run()
 
 bool D3DApp::Init()
 {
+	m_pMouse = std::make_unique<DirectX::Mouse>();
+	m_pKeyboard = std::make_unique<DirectX::Keyboard>();
+
 	if (!InitMainWindow())
 		return false;
 
@@ -126,14 +114,6 @@ bool D3DApp::Init()
 
 	if (!InitDirect3D())
 		return false;
-
-#ifdef USE_IMGUI
-	if (!InitImGui())
-		return false;
-#else
-	m_pMouse = std::make_unique<DirectX::Mouse>();
-	m_pKeyboard = std::make_unique<DirectX::Keyboard>();
-#endif
 
 	return true;
 }
@@ -221,11 +201,6 @@ void D3DApp::OnResize()
 
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef USE_IMGUI
-	if (ImGui_ImplWin32_WndProcHandler(m_hMainWnd, msg, wParam, lParam))
-		return true;
-#endif
-
 	switch (msg)
 	{
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  
@@ -334,7 +309,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
 		return 0;
 
-#ifndef USE_IMGUI
 		// 监测这些键盘/鼠标事件
 	case WM_INPUT:
 
@@ -365,7 +339,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		m_pMouse->ProcessMessage(msg, wParam, lParam);
 		m_pKeyboard->ProcessMessage(msg, wParam, lParam);
 		return 0;
-#endif
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -431,10 +404,7 @@ bool D3DApp::InitDirect3D()
 	HRESULT hr = S_OK;
 
 	// 创建D3D设备 和 D3D设备上下文
-	UINT createDeviceFlags = 0;
-#ifndef USE_IMGUI
-	createDeviceFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;	// Direct2D需要支持BGRA格式
-#endif
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;	// Direct2D需要支持BGRA格式
 #if defined(DEBUG) || defined(_DEBUG)  
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -489,7 +459,7 @@ bool D3DApp::InitDirect3D()
 
 	// 检测 MSAA支持的质量等级
 	m_pd3dDevice->CheckMultisampleQualityLevels(
-		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality);
+		DXGI_FORMAT_B8G8R8A8_UNORM, 4, &m_4xMsaaQuality);	// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
 	assert(m_4xMsaaQuality > 0);
 
 
@@ -518,11 +488,7 @@ bool D3DApp::InitDirect3D()
 		ZeroMemory(&sd, sizeof(sd));
 		sd.Width = m_ClientWidth;
 		sd.Height = m_ClientHeight;
-#ifdef USE_IMGUI
-		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-#else
 		sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;		// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
-#endif
 		// 是否开启4倍多重采样？
 		if (m_Enable4xMsaa)
 		{
@@ -558,11 +524,7 @@ bool D3DApp::InitDirect3D()
 		sd.BufferDesc.Height = m_ClientHeight;
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
-#ifdef USE_IMGUI
-		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-#else
-		sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;		// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
-#endif
+		sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;	// 注意此处DXGI_FORMAT_B8G8R8A8_UNORM
 		sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 		sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 		// 是否开启4倍多重采样？
@@ -599,26 +561,8 @@ bool D3DApp::InitDirect3D()
 	return true;
 }
 
-#if USE_IMGUI
-bool D3DApp::InitImGui()
-{
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 允许键盘控制
-	io.ConfigWindowsMoveFromTitleBarOnly = true;              // 仅允许标题拖动
 
-	// 设置Dear ImGui风格
-	ImGui::StyleColorsDark();
 
-	// 设置平台/渲染器后端
-	ImGui_ImplWin32_Init(m_hMainWnd);
-	ImGui_ImplDX11_Init(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get());
-
-	return true;
-
-}
-#endif
 
 void D3DApp::CalculateFrameStats()
 {

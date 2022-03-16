@@ -36,7 +36,7 @@ public:
 class BasicEffect : public IEffect
 {
 public:
-
+	enum RenderType { RenderObject, RenderInstance };
 	BasicEffect();
 	virtual ~BasicEffect() override;
 
@@ -57,10 +57,7 @@ public:
 	//
 
 	// 默认状态来绘制
-	void SetRenderDefault(ID3D11DeviceContext* deviceContext);
-	// 公告板绘制
-	void SetRenderBillboard(ID3D11DeviceContext* deviceContext, bool enableAlphaToCoverage);
-
+	void SetRenderDefault(ID3D11DeviceContext * deviceContext, RenderType type);
 
 	//
 	// 矩阵设置
@@ -85,22 +82,13 @@ public:
 
 	void SetMaterial(const Material& material);
 
-	void SetTexture(ID3D11ShaderResourceView* texture);
-
-	void SetTextureArray(ID3D11ShaderResourceView* textures);
+	void SetTextureDiffuse(ID3D11ShaderResourceView * textureDiffuse);
 
 	void SetEyePos(const DirectX::XMFLOAT3& eyePos);
 
 
 
-	//
-	// 状态设置
-	//
 
-	void SetFogState(bool isOn);
-	void SetFogStart(float fogStart);
-	void SetFogColor(DirectX::XMVECTOR fogColor);
-	void SetFogRange(float fogRange);
 
 
 	// 应用常量缓冲区和纹理资源的变更

@@ -8,89 +8,83 @@
 
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
-
+#include "Model.h"
 #include "Effects.h"
 #include "Geometry.h"
 #include "Transform.h"
 
-// 一个尽可能小的游戏对象类
 class GameObject
 {
 public:
-	// 使用模板别名(C++11)简化类型名
 	template <class T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-	GameObject();
+
+	GameObject() = default;
+	~GameObject() = default;
+
+	GameObject(const GameObject&) = default;
+	GameObject& operator=(const GameObject&) = default;
+
+	GameObject(GameObject&&) = default;
+	GameObject& operator=(GameObject&&) = default;
 
 	// 获取物体变换
 	Transform& GetTransform();
 	// 获取物体变换
 	const Transform& GetTransform() const;
 
-	// 设置缓冲区
-	template<class VertexType, class IndexType>
-	void SetBuffer(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData);
-	// 设置纹理
-	void SetTexture(ID3D11ShaderResourceView* texture);
-	// 设置材质
-	void SetMaterial(const Material& material);
+	//
+	// 获取包围盒
+	//
 
+	DirectX::BoundingBox GetLocalBoundingBox() const;
+	DirectX::BoundingBox GetBoundingBox() const;
+	DirectX::BoundingOrientedBox GetBoundingOrientedBox() const;
+
+	//
+	// 设置实例缓冲区
+	//
+
+	// 获取缓冲区可容纳实例的数目
+	size_t GetCapacity() const;
+	// 重新设置实例缓冲区可容纳实例的数目
+	void ResizeBuffer(ID3D11Device * device, size_t count);
+	// 获取实例缓冲区
+
+	//
+	// 设置模型
+	//
+
+	void SetModel(Model&& model);
+	void SetModel(const Model& model);
+
+	//
 	// 绘制
-	void Draw(ID3D11DeviceContext* deviceContext, BasicEffect& effect);
+	//
 
+	// 绘制对象
+	void Draw(ID3D11DeviceContext * deviceContext, BasicEffect& effect);
+	// 绘制实例
+	void DrawInstanced(ID3D11DeviceContext* deviceContext, BasicEffect& effect, const std::vector<Transform>& data);
+
+	//
+	// 调试 
+	//
+	
 	// 设置调试对象名
-	// 若缓冲区被重新设置，调试对象名也需要被重新设置
+	// 若模型被重新设置，调试对象名也需要被重新设置
 	void SetDebugObjectName(const std::string& name);
+
 private:
-	Transform m_Transform;								// 物体变换信息
-	Material m_Material;								// 物体材质
-	ComPtr<ID3D11ShaderResourceView> m_pTexture;		// 纹理
-	ComPtr<ID3D11Buffer> m_pVertexBuffer;				// 顶点缓冲区
-	ComPtr<ID3D11Buffer> m_pIndexBuffer;				// 索引缓冲区
-	UINT m_VertexStride;								// 顶点字节大小
-	UINT m_IndexCount;								    // 索引数目	
+	Model m_Model = {};											    // 模型
+	Transform m_Transform = {};										// 物体变换
+
+	ComPtr<ID3D11Buffer> m_pInstancedBuffer = nullptr;				// 实例缓冲区
+	size_t m_Capacity = 0;										    // 缓冲区容量
 };
 
-template<class VertexType, class IndexType>
-inline void GameObject::SetBuffer(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData)
-{
-	// 释放旧资源
-	m_pVertexBuffer.Reset();
-	m_pIndexBuffer.Reset();
 
-	// 检查D3D设备
-	if (device == nullptr)
-		return;
-
-	// 设置顶点缓冲区描述
-	m_VertexStride = sizeof(VertexType);
-	D3D11_BUFFER_DESC vbd;
-	ZeroMemory(&vbd, sizeof(vbd));
-	vbd.Usage = D3D11_USAGE_IMMUTABLE;
-	vbd.ByteWidth = (UINT)meshData.vertexVec.size() * m_VertexStride;
-	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vbd.CPUAccessFlags = 0;
-	// 新建顶点缓冲区
-	D3D11_SUBRESOURCE_DATA InitData;
-	ZeroMemory(&InitData, sizeof(InitData));
-	InitData.pSysMem = meshData.vertexVec.data();
-	device->CreateBuffer(&vbd, &InitData, m_pVertexBuffer.GetAddressOf());
-
-	// 设置索引缓冲区描述
-	m_IndexCount = (UINT)meshData.indexVec.size();
-	D3D11_BUFFER_DESC ibd;
-	ZeroMemory(&ibd, sizeof(ibd));
-	ibd.Usage = D3D11_USAGE_IMMUTABLE;
-	ibd.ByteWidth = m_IndexCount * sizeof(IndexType);
-	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	ibd.CPUAccessFlags = 0;
-	// 新建索引缓冲区
-	InitData.pSysMem = meshData.indexVec.data();
-	device->CreateBuffer(&ibd, &InitData, m_pIndexBuffer.GetAddressOf());
-
-
-}
 
 
 #endif

@@ -6,11 +6,8 @@ using namespace DirectX;
 GameApp::GameApp(HINSTANCE hInstance)
 	: D3DApp(hInstance),
 	m_CameraMode(CameraMode::Free),
-	m_EnableAlphaToCoverage(true),
-	m_FogEnabled(true),
-	m_FogRange(75.0f),
-	m_IsNight(false),
-	m_TreeMat()
+	m_EnableFrustumCulling(true),
+	m_EnableInstancing(true)
 {
 }
 
@@ -140,70 +137,32 @@ void GameApp::UpdateScene(float dt)
 	// 将位置限制在[-49.9f, 49.9f]的区域内
 	// 不允许穿地
 	XMFLOAT3 adjustedPos;
-	XMStoreFloat3(&adjustedPos, XMVectorClamp(cam1st->GetPositionXM(), 
-		XMVectorSet(-49.9f, 0.0f, -49.9f, 0.0f), XMVectorSet(49.9f, 99.9f, 49.9f, 0.0f)));
+	XMStoreFloat3(&adjustedPos, XMVectorClamp(cam1st->GetPositionXM(),
+		XMVectorSet(-119.9f, 0.0f, -119.9f, 0.0f), XMVectorSet(119.9f, 99.9f, 119.9f, 0.0f)));
 	cam1st->SetPosition(adjustedPos);
 
 	m_BasicEffect.SetEyePos(m_pCamera->GetPosition());
 	m_BasicEffect.SetViewMatrix(m_pCamera->GetViewXM());
 
 	// ******************
-	// 开关雾效
+	// 视锥体裁剪开关
 	//
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1))
 	{
-		m_FogEnabled = !m_FogEnabled;
-		m_BasicEffect.SetFogState(m_FogEnabled);
+		m_EnableInstancing = !m_EnableInstancing;
 	}
-
-	// ******************
-	// 白天/黑夜变换
-	//
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2))
 	{
-		m_IsNight = !m_IsNight;
-		if (m_IsNight)
-		{
-			// 黑夜模式下变为逐渐黑暗
-			m_BasicEffect.SetFogColor(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f));
-			m_BasicEffect.SetFogStart(5.0f);
-		}
-		else
-		{
-			// 白天模式则对应雾效
-			m_BasicEffect.SetFogColor(XMVectorSet(0.75f, 0.75f, 0.75f, 1.0f));
-			m_BasicEffect.SetFogStart(15.0f);
-		}
-	}
-	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3))
-	{
-		m_EnableAlphaToCoverage = !m_EnableAlphaToCoverage;
+		m_EnableFrustumCulling = !m_EnableFrustumCulling;
 	}
 
-	// ******************
-	// 调整雾的范围
-	//
-	if (mouseState.scrollWheelValue != 0)
-	{
-		// 一次滚轮滚动的最小单位为120
-		m_FogRange += mouseState.scrollWheelValue / 120;
-		if (m_FogRange < 15.0f)
-			m_FogRange = 15.0f;
-		else if (m_FogRange > 175.0f)
-			m_FogRange = 175.0f;
-		m_BasicEffect.SetFogRange(m_FogRange);
-	}
-	
 
 	// 重置滚轮值
 	m_pMouse->ResetScrollWheelValue();
 
-	
-
 	// 退出程序，这里应向窗口发送销毁信息
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape))
 		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
-
 }
 
 void GameApp::DrawScene()
@@ -214,30 +173,40 @@ void GameApp::DrawScene()
 	// ******************
 	// 绘制Direct3D部分
 	//
-	
-	// 设置背景色
-	if (m_IsNight)
+	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&Colors::Silver));
+	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	// 统计实际绘制的物体数目
+	std::vector<Transform> acceptedData;
+	// 是否开启视锥体裁剪
+	if (m_EnableFrustumCulling)
 	{
-		m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&Colors::Black));
+		acceptedData = Collision::FrustumCulling(m_InstancedData, m_Trees.GetLocalBoundingBox(),
+			m_pCamera->GetViewXM(), m_pCamera->GetProjXM());
+	}
+	// 确定使用的数据集
+	const std::vector<Transform>& refData = m_EnableFrustumCulling ? acceptedData : m_InstancedData;
+	// 是否开启硬件实例化
+	if (m_EnableInstancing)
+	{
+		// 硬件实例化绘制
+		m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get(), BasicEffect::RenderInstance);
+		m_Trees.DrawInstanced(m_pd3dImmediateContext.Get(), m_BasicEffect, refData);
 	}
 	else
 	{
-		m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&Colors::Silver));
+		// 遍历的形式逐个绘制
+		m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get(), BasicEffect::RenderObject);
+		for (const Transform& t : refData)
+		{
+			m_Trees.GetTransform() = t;
+			m_Trees.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+		}
 	}
-	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// 绘制地面
-	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
+	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get(), BasicEffect::RenderObject);
 	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-
-	// 绘制树
-	m_BasicEffect.SetRenderBillboard(m_pd3dImmediateContext.Get(), m_EnableAlphaToCoverage);
-	m_BasicEffect.SetMaterial(m_TreeMat);
-	UINT stride = sizeof(VertexPosSize);
-	UINT offset = 0;
-	m_pd3dImmediateContext->IASetVertexBuffers(0, 1, mPointSpritesBuffer.GetAddressOf(), &stride, &offset);
-	m_BasicEffect.Apply(m_pd3dImmediateContext.Get());
-	m_pd3dImmediateContext->Draw(16, 0);
 
 	// ******************
 	// 绘制Direct2D部分
@@ -245,19 +214,14 @@ void GameApp::DrawScene()
 	if (m_pd2dRenderTarget != nullptr)
 	{
 		m_pd2dRenderTarget->BeginDraw();
-		std::wstring text = L"1-雾效开关 2-白天/黑夜雾效切换 3-AlphaToCoverage开关 Esc-退出\n"
-			L"滚轮-调整雾效范围\n"
-			L"仅支持自由视角摄像机\n";
-		text += std::wstring(L"AlphaToCoverage状态: ") + (m_EnableAlphaToCoverage ? L"开启\n" : L"关闭\n");
-		text += std::wstring(L"雾效状态: ") + (m_FogEnabled ? L"开启\n" : L"关闭\n");
-		if (m_FogEnabled)
-		{
-			text += std::wstring(L"天气情况: ") + (m_IsNight ? L"黑夜\n" : L"白天\n");
-			text += L"雾效范围: " + std::to_wstring(m_IsNight ? 5 : 15) + L"-" +
-				std::to_wstring((m_IsNight ? 5 : 15) + (int)m_FogRange);
-		}
-
-
+		std::wstring text = L"当前摄像机模式: 自由视角  Esc退出\n"
+			L"鼠标移动控制视野 WSAD移动\n"
+			L"数字键1:硬件实例化开关 2:视锥体裁剪开关\n"
+			L"硬件实例化: ";
+		text += (m_EnableInstancing ? L"开" : L"关");
+		text += L" 视锥体裁剪: ";
+		text += (m_EnableFrustumCulling ? L"开" : L"关");
+		text += L"\n绘制树木数: " + std::to_wstring(refData.size());
 		m_pd2dRenderTarget->DrawTextW(text.c_str(), (UINT32)text.length(), m_pTextFormat.Get(),
 			D2D1_RECT_F{ 0.0f, 0.0f, 600.0f, 200.0f }, m_pColorBrush.Get());
 		HR(m_pd2dRenderTarget->EndDraw());
@@ -272,41 +236,26 @@ void GameApp::DrawScene()
 bool GameApp::InitResource()
 {
 	// ******************
-	// 初始化各种物体
+	// 初始化游戏对象
 	//
 
-	// 初始化树纹理资源
-	HR(CreateTexture2DArrayFromFile(
-		m_pd3dDevice.Get(),
-		m_pd3dImmediateContext.Get(),
-		std::vector<std::wstring>{
-			L"Texture\\tree0.dds",
-			L"Texture\\tree1.dds",
-			L"Texture\\tree2.dds",
-			L"Texture\\tree3.dds"},
-		nullptr,
-		mTreeTexArray.GetAddressOf()));
-	m_BasicEffect.SetTextureArray(mTreeTexArray.Get());
+	// 创建随机的树
+	CreateRandomTrees();
 
-	// 初始化点精灵缓冲区
-	InitPointSpritesBuffer();
+	// 初始化地面
+	m_ObjReader.Read(L"Model\\ground_20.mbo", L"Model\\ground_20.obj");
+	m_Ground.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
-	// 初始化树的材质
-	m_TreeMat.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	m_TreeMat.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	m_TreeMat.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f);
-
-	ComPtr<ID3D11ShaderResourceView> texture;
-	// 初始化地板
-	m_Ground.SetBuffer(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(100.0f, 100.0f), XMFLOAT2(10.0f, 10.0f)));
-	m_Ground.GetTransform().SetPosition(0.0f, -5.0f, 0.0f);
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Grass.dds", nullptr, texture.GetAddressOf()));
-	m_Ground.SetTexture(texture.Get());
-	Material material{};
-	material.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	material.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	material.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f);
-	m_Ground.SetMaterial(material);
+	// ******************
+	// 初始化摄像机
+	//
+	auto camera = std::shared_ptr<FirstPersonCamera>(new FirstPersonCamera);
+	m_pCamera = camera;
+	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
+	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
+	camera->LookTo(XMFLOAT3(), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
+	m_BasicEffect.SetViewMatrix(camera->GetViewXM());
+	m_BasicEffect.SetProjMatrix(camera->GetProjXM());
 
 	// ******************
 	// 初始化不会变化的值
@@ -314,7 +263,7 @@ bool GameApp::InitResource()
 
 	// 方向光
 	DirectionalLight dirLight[4];
-	dirLight[0].ambient = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
+	dirLight[0].ambient = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	dirLight[0].diffuse = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
 	dirLight[0].specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	dirLight[0].direction = XMFLOAT3(-0.577f, -0.577f, 0.577f);
@@ -328,64 +277,52 @@ bool GameApp::InitResource()
 		m_BasicEffect.SetDirLight(i, dirLight[i]);
 
 	// ******************
-	// 初始化摄像机
-	//
-	auto camera = std::shared_ptr<FirstPersonCamera>(new FirstPersonCamera);
-	m_pCamera = camera;
-	camera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
-	camera->SetPosition(XMFLOAT3());
-	camera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
-	camera->LookTo(XMFLOAT3(), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
-
-	m_BasicEffect.SetWorldMatrix(XMMatrixIdentity());
-	m_BasicEffect.SetViewMatrix(camera->GetViewXM());
-	m_BasicEffect.SetProjMatrix(camera->GetProjXM());
-	m_BasicEffect.SetEyePos(camera->GetPosition());
-
-	// ******************
-	// 初始化雾效和天气等
-	//
-
-	m_BasicEffect.SetFogState(m_FogEnabled);
-	m_BasicEffect.SetFogColor(XMVectorSet(0.75f, 0.75f, 0.75f, 1.0f));
-	m_BasicEffect.SetFogStart(15.0f);
-	m_BasicEffect.SetFogRange(75.0f);
-
-	// ******************
 	// 设置调试对象名
 	//
 	m_Ground.SetDebugObjectName("Ground");
-	D3D11SetDebugObjectName(mPointSpritesBuffer.Get(), "PointSpritesVertexBuffer");
-	D3D11SetDebugObjectName(mTreeTexArray.Get(), "TreeTexArray");
-	
+	m_Trees.SetDebugObjectName("Trees");
+
+
 	return true;
 }
 
-void GameApp::InitPointSpritesBuffer()
+void GameApp::CreateRandomTrees()
 {
 	srand((unsigned)time(nullptr));
-	VertexPosSize vertexes[16];
+	// 初始化树
+	m_ObjReader.Read(L"Model\\tree.mbo", L"..\\Model\\tree.obj");
+	m_Trees.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
+	XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);
+	
+	BoundingBox treeBox = m_Trees.GetLocalBoundingBox();
+
+	// 让树木底部紧贴地面位于y = -2的平面
+	treeBox.Transform(treeBox, S);
+	float Ty = -(treeBox.Center.y - treeBox.Extents.y + 2.0f);
+	// 随机生成256颗随机朝向的树
+	m_InstancedData.resize(256);
+	m_Trees.ResizeBuffer(m_pd3dDevice.Get(), 256);
+
 	float theta = 0.0f;
+	int pos = 0;
 	for (int i = 0; i < 16; ++i)
 	{
-		// 取20-50的半径放置随机的树
-		float radius = (float)(rand() % 31 + 20);
-		float randomRad = rand() % 256 / 256.0f * XM_2PI / 16;
-		vertexes[i].pos = XMFLOAT3(radius * cosf(theta + randomRad), 8.0f, radius * sinf(theta + randomRad));
-		vertexes[i].size = XMFLOAT2(30.0f, 30.0f);
+		// 取5-125的半径放置随机的树
+		for (int j = 0; j < 4; ++j)
+		{
+			// 距离越远，树木越多
+			for (int k = 0; k < 2 * j + 1; ++k, ++pos)
+			{
+				float radius = (float)(rand() % 30 + 30 * j + 5);
+				float randomRad = rand() % 256 / 256.0f * XM_2PI / 16;
+				m_InstancedData[pos].SetScale(0.015f, 0.015f, 0.015f);
+				m_InstancedData[pos].SetRotation(0.0f, rand() % 256 / 256.0f * XM_2PI, 0.0f);
+				m_InstancedData[pos].SetPosition(radius * cosf(theta + randomRad), Ty, radius * sinf(theta + randomRad));
+			}
+		}
 		theta += XM_2PI / 16;
 	}
 
-	// 设置顶点缓冲区描述
-	D3D11_BUFFER_DESC vbd;
-	ZeroMemory(&vbd, sizeof(vbd));
-	vbd.Usage = D3D11_USAGE_IMMUTABLE;	// 数据不可修改
-	vbd.ByteWidth = sizeof (vertexes);
-	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vbd.CPUAccessFlags = 0;
-	// 新建顶点缓冲区
-	D3D11_SUBRESOURCE_DATA InitData;
-	ZeroMemory(&InitData, sizeof(InitData));
-	InitData.pSysMem = vertexes;
-	HR(m_pd3dDevice->CreateBuffer(&vbd, &InitData, mPointSpritesBuffer.GetAddressOf()));
+	
 }
+

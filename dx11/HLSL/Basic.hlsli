@@ -1,30 +1,25 @@
 #include "LightHelper.hlsli"
 
-Texture2D g_Tex : register(t0);
-Texture2DArray g_TexArray : register(t1);
+Texture2D g_DiffuseMap : register(t0);
 SamplerState g_Sam : register(s0);
 
-cbuffer CBChangesEveryDrawing : register(b0)
+
+cbuffer CBChangesEveryInstanceDrawing : register(b0)
 {
     matrix g_World;
     matrix g_WorldInvTranspose;
+}
+
+cbuffer CBChangesEveryObjectDrawing : register(b1)
+{
     Material g_Material;
 }
 
-cbuffer CBChangesEveryFrame : register(b1)
+cbuffer CBChangesEveryFrame : register(b2)
 {
     matrix g_View;
     float3 g_EyePosW;
     float g_Pad;
-}
-
-cbuffer CBDrawingStates : register(b2)
-{
-    float4 g_FogColor;
-    int g_FogEnabled;
-    float g_FogStart;
-    float g_FogRange;
-    float g_Pad2;
 }
 
 cbuffer CBChangesOnResize : register(b3)
@@ -46,6 +41,8 @@ struct VertexPosNormalTex
     float2 Tex : TEXCOORD;
 };
 
+
+
 struct VertexPosHWNormalTex
 {
     float4 PosH : SV_POSITION;
@@ -54,19 +51,12 @@ struct VertexPosHWNormalTex
     float2 Tex : TEXCOORD;
 };
 
-struct PointSprite
+struct InstancePosNormalTex
 {
-    float3 PosW : POSITION;
-    float2 SizeW : SIZE;
-};
-
-struct BillboardVertex
-{
-    float4 PosH : SV_POSITION;
-    float3 PosW : POSITION;
-    float3 NormalW : NORMAL;
+    float3 PosL : POSITION;
+    float3 NormalL : NORMAL;
     float2 Tex : TEXCOORD;
-    uint PrimID : SV_PrimitiveID;
+    matrix World : World;
+    matrix WorldInvTranspose : WorldInvTranspose;
 };
-
 

@@ -146,6 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="DDSTextureLoader.h" />
@@ -158,7 +159,9 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="LightHelper.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ObjReader.h" />
     <ClInclude Include="RenderStates.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
@@ -167,6 +170,7 @@
   <ItemGroup>
     <ClCompile Include="BasicEffect.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="d3dApp.cpp" />
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
@@ -176,7 +180,9 @@
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ObjReader.cpp" />
     <ClCompile Include="RenderStates.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vertex.cpp" />
@@ -189,12 +195,16 @@
     <None Include="HLSL\Basic.hlsli" />
     <None Include="HLSL\Light.hlsli" />
     <None Include="HLSL\LightHelper.hlsli" />
+    <None Include="Model\ground.mtl" />
+    <None Include="Model\ground_20.mbo" />
+    <None Include="Model\house.mtl" />
+    <None Include="Model\tree.mtl" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="HLSL\Billboard_GS.hlsl">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GS</EntryPointName>
+    <FxCompile Include="HLSL\BasicObject_VS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="HLSL\Basic_PS.hlsl">
@@ -209,13 +219,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="HLSL\Billboard_PS.hlsl">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
-    </FxCompile>
-    <FxCompile Include="HLSL\Billboard_VS.hlsl">
+    <FxCompile Include="HLSL\Basicinstance_VS.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -223,6 +227,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Model\grass.dds" />
+    <Image Include="Model\house.png" />
+    <Image Include="Model\tree_00.dds" />
+    <Image Include="Model\tree_01.dds" />
+    <Image Include="Model\tree_02.dds" />
     <Image Include="Texture\brick.dds" />
     <Image Include="Texture\bricks.dds" />
     <Image Include="Texture\checkboard.dds" />
@@ -233,6 +242,12 @@
     <Image Include="Texture\water.dds" />
     <Image Include="Texture\WireFence.dds" />
     <Image Include="Texture\WoodCrate.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Model\ground_20.obj" />
+    <Object Include="Model\ground_24.obj" />
+    <Object Include="Model\house.obj" />
+    <Object Include="Model\tree.obj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
