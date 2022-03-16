@@ -7,11 +7,11 @@ using namespace DirectX;
 //
 
 HRESULT CreateShaderFromFile(
-	const WCHAR* csoFileNameInOut,
-	const WCHAR* hlslFileName,
+	const WCHAR * csoFileNameInOut,
+	const WCHAR * hlslFileName,
 	LPCSTR entryPoint,
 	LPCSTR shaderModel,
-	ID3DBlob** ppBlobOut)
+	ID3DBlob ** ppBlobOut)
 {
 	HRESULT hr = S_OK;
 
@@ -223,11 +223,11 @@ HRESULT CreateTexture2DArrayFromFile(
 }
 
 HRESULT CreateWICTexture2DCubeFromFile(
-	ID3D11Device* d3dDevice,
-	ID3D11DeviceContext* d3dDeviceContext,
-	const std::wstring& cubeMapFileName,
-	ID3D11Texture2D** textureArray,
-	ID3D11ShaderResourceView** textureCubeView,
+	ID3D11Device * d3dDevice,
+	ID3D11DeviceContext * d3dDeviceContext,
+	const std::wstring & cubeMapFileName,
+	ID3D11Texture2D ** textureArray,
+	ID3D11ShaderResourceView ** textureCubeView,
 	bool generateMips)
 {
 	// 检查设备、设备上下文是否非空
@@ -424,11 +424,11 @@ HRESULT CreateWICTexture2DCubeFromFile(
 }
 
 HRESULT CreateWICTexture2DCubeFromFile(
-	ID3D11Device* d3dDevice,
-	ID3D11DeviceContext* d3dDeviceContext,
+	ID3D11Device * d3dDevice,
+	ID3D11DeviceContext * d3dDeviceContext,
 	const std::vector<std::wstring>& cubeMapFileNames,
-	ID3D11Texture2D** textureArray,
-	ID3D11ShaderResourceView** textureCubeView,
+	ID3D11Texture2D ** textureArray,
+	ID3D11ShaderResourceView ** textureCubeView,
 	bool generateMips)
 {
 	// 检查设备与设备上下文是否非空

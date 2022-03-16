@@ -1,5 +1,5 @@
-﻿//***************************************************************************************
-// Camera.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
+//***************************************************************************************
+// Camera.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 提供第一人称(自由视角)和第三人称摄像机
@@ -70,7 +70,7 @@ protected:
 
 	// 摄像机的变换
 	Transform m_Transform = {};
-
+	
 	// 视锥体属性
 	float m_NearZ = 0.0f;
 	float m_FarZ = 0.0f;
@@ -92,7 +92,7 @@ public:
 	void SetPosition(float x, float y, float z);
 	void SetPosition(const DirectX::XMFLOAT3& pos);
 	// 设置摄像机的朝向
-	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
+	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target,const DirectX::XMFLOAT3& up);
 	void LookTo(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& to, const DirectX::XMFLOAT3& up);
 	// 平移
 	void Strafe(float d);

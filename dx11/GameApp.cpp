@@ -79,13 +79,13 @@ void GameApp::OnResize()
 		assert(m_pd2dRenderTarget);
 	}
 
+	// 摄像机变更显示
 	if (m_pCamera != nullptr)
 	{
 		m_pCamera->SetFrustum(XM_PI / 3, AspectRatio(), 1.0f, 1000.0f);
 		m_pCamera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
 		m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
 	}
-
 }
 
 void GameApp::UpdateScene(float dt)
@@ -102,39 +102,32 @@ void GameApp::UpdateScene(float dt)
 	// 获取子类
 	auto cam1st = std::dynamic_pointer_cast<FirstPersonCamera>(m_pCamera);
 
-	if (m_CameraMode == CameraMode::Free)
+	// ******************
+	// 自由摄像机的操作
+	//
+
+	// 方向移动
+	if (keyState.IsKeyDown(Keyboard::W))
+		cam1st->MoveForward(dt * 6.0f);
+	if (keyState.IsKeyDown(Keyboard::S))
+		cam1st->MoveForward(dt * -6.0f);
+	if (keyState.IsKeyDown(Keyboard::A))
+		cam1st->Strafe(dt * -6.0f);
+	if (keyState.IsKeyDown(Keyboard::D))
+		cam1st->Strafe(dt * 6.0f);
+
+	// 在鼠标没进入窗口前仍为ABSOLUTE模式
+	if (mouseState.positionMode == Mouse::MODE_RELATIVE)
 	{
-		// ******************
-		// 自由摄像机的操作
-		//
-
-		// 方向移动
-		if (keyState.IsKeyDown(Keyboard::W))
-		{
-			cam1st->MoveForward(dt * 6.0f);
-		}
-		if (keyState.IsKeyDown(Keyboard::S))
-		{
-			cam1st->MoveForward(dt * -6.0f);
-		}
-		if (keyState.IsKeyDown(Keyboard::A))
-			cam1st->Strafe(dt * -6.0f);
-		if (keyState.IsKeyDown(Keyboard::D))
-			cam1st->Strafe(dt * 6.0f);
-
-		// 在鼠标没进入窗口前仍为ABSOLUTE模式
-		if (mouseState.positionMode == Mouse::MODE_RELATIVE)
-		{
-			cam1st->Pitch(mouseState.y * dt * 1.25f);
-			cam1st->RotateY(mouseState.x * dt * 1.25f);
-		}
+		cam1st->Pitch(mouseState.y * dt * 1.25f);
+		cam1st->RotateY(mouseState.x * dt * 1.25f);
 	}
 
 	// ******************
-	// 更新摄像机
+	// 更新摄像机相关
 	//
 
-	// 将位置限制在[-49.9f, 49.9f]的区域内
+	// 将位置限制在[-119.9f, 119.9f]的区域内
 	// 不允许穿地
 	XMFLOAT3 adjustedPos;
 	XMStoreFloat3(&adjustedPos, XMVectorClamp(cam1st->GetPositionXM(),
@@ -228,7 +221,6 @@ void GameApp::DrawScene()
 	}
 
 	HR(m_pSwapChain->Present(0, 0));
-
 }
 
 
@@ -243,7 +235,7 @@ bool GameApp::InitResource()
 	CreateRandomTrees();
 
 	// 初始化地面
-	m_ObjReader.Read(L"Model\\ground_20.mbo", L"Model\\ground_20.obj");
+	m_ObjReader.Read(L"..\\Model\\ground_20.mbo", L"..\\Model\\ground_20.obj");
 	m_Ground.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 
 	// ******************
@@ -290,7 +282,7 @@ void GameApp::CreateRandomTrees()
 {
 	srand((unsigned)time(nullptr));
 	// 初始化树
-	m_ObjReader.Read(L"Model\\tree.mbo", L"..\\Model\\tree.obj");
+	m_ObjReader.Read(L"..\\Model\\tree.mbo", L"..\\Model\\tree.obj");
 	m_Trees.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
 	XMMATRIX S = XMMatrixScaling(0.015f, 0.015f, 0.015f);
 	

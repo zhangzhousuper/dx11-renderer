@@ -1,5 +1,5 @@
 //***************************************************************************************
-// Effects.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
+// Effects.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 简易特效管理框架
@@ -29,14 +29,16 @@ public:
 	IEffect& operator=(IEffect&&) = default;
 
 	// 更新并绑定常量缓冲区
-	virtual void Apply(ID3D11DeviceContext* deviceContext) = 0;
+	virtual void Apply(ID3D11DeviceContext * deviceContext) = 0;
 };
 
 
 class BasicEffect : public IEffect
 {
 public:
+
 	enum RenderType { RenderObject, RenderInstance };
+
 	BasicEffect();
 	virtual ~BasicEffect() override;
 
@@ -46,10 +48,10 @@ public:
 	// 获取单例
 	static BasicEffect& Get();
 
-
+	
 
 	// 初始化所需资源
-	bool InitAll(ID3D11Device* device);
+	bool InitAll(ID3D11Device * device);
 
 
 	//
@@ -67,8 +69,6 @@ public:
 	void XM_CALLCONV SetViewMatrix(DirectX::FXMMATRIX V);
 	void XM_CALLCONV SetProjMatrix(DirectX::FXMMATRIX P);
 
-
-
 	//
 	// 光照、材质和纹理相关设置
 	//
@@ -83,17 +83,14 @@ public:
 	void SetMaterial(const Material& material);
 
 	void SetTextureDiffuse(ID3D11ShaderResourceView * textureDiffuse);
+	
 
 	void SetEyePos(const DirectX::XMFLOAT3& eyePos);
-
-
-
-
-
+	
 
 	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext* deviceContext) override;
-
+	void Apply(ID3D11DeviceContext * deviceContext) override;
+	
 private:
 	class Impl;
 	std::unique_ptr<Impl> pImpl;

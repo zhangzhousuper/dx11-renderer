@@ -1,7 +1,6 @@
 #ifndef GAMEAPP_H
 #define GAMEAPP_H
 
-#include <ctime>
 #include "d3dApp.h"
 #include "Camera.h"
 #include "GameObject.h"
@@ -26,12 +25,13 @@ public:
 private:
 	bool InitResource();
 	void CreateRandomTrees();
-
+	
 private:
 	
 	ComPtr<ID2D1SolidColorBrush> m_pColorBrush;				    // 单色笔刷
 	ComPtr<IDWriteFont> m_pFont;								// 字体
 	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
+
 	GameObject m_Trees;										    // 树
 	GameObject m_Ground;										// 地面
 	std::vector<Transform> m_InstancedData;						// 树的实例数据

@@ -5,6 +5,7 @@
 #include "Vertex.h"
 using namespace DirectX;
 
+
 //
 // BasicEffect::Impl 需要先于BasicEffect的定义
 //
@@ -27,6 +28,7 @@ public:
 	{
 		Material material;
 	};
+
 	struct CBChangesEveryFrame
 	{
 		DirectX::XMMATRIX view;
@@ -34,13 +36,10 @@ public:
 		float pad;
 	};
 
-
-
 	struct CBChangesOnResize
 	{
 		DirectX::XMMATRIX proj;
 	};
-
 
 	struct CBChangesRarely
 	{
@@ -48,6 +47,7 @@ public:
 		PointLight pointLight[BasicEffect::maxLights];
 		SpotLight spotLight[BasicEffect::maxLights];
 	};
+
 
 public:
 	// 必须显式指定
@@ -73,7 +73,7 @@ public:
 	ComPtr<ID3D11InputLayout> m_pInstancePosNormalTexLayout;	
 	ComPtr<ID3D11InputLayout> m_pVertexPosNormalTexLayout;		
 
-	ComPtr<ID3D11ShaderResourceView> m_pTextureDiffuse;		   
+	ComPtr<ID3D11ShaderResourceView> m_pTextureDiffuse;		                // 漫反射紋理
 };
 
 //
@@ -167,6 +167,7 @@ bool BasicEffect::InitAll(ID3D11Device * device)
 
 	HR(CreateShaderFromFile(L"HLSL\\Basic_PS.cso", L"HLSL\\Basic_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pBasicPS.GetAddressOf()));
+
 	pImpl->m_pCBuffers.assign({
 		&pImpl->m_CBInstDrawing,
 		&pImpl->m_CBObjDrawing, 
@@ -195,6 +196,7 @@ bool BasicEffect::InitAll(ID3D11Device * device)
 	return true;
 }
 
+
 void BasicEffect::SetRenderDefault(ID3D11DeviceContext * deviceContext, RenderType type)
 {
 	if (type == RenderInstance)
@@ -219,8 +221,6 @@ void BasicEffect::SetRenderDefault(ID3D11DeviceContext * deviceContext, RenderTy
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
 }
-
-
 
 void XM_CALLCONV BasicEffect::SetWorldMatrix(DirectX::FXMMATRIX W)
 {
@@ -277,17 +277,12 @@ void BasicEffect::SetTextureDiffuse(ID3D11ShaderResourceView * textureDiffuse)
 	pImpl->m_pTextureDiffuse = textureDiffuse;
 }
 
-
-
 void BasicEffect::SetEyePos(const DirectX::XMFLOAT3& eyePos)
 {
 	auto& cBuffer = pImpl->m_CBFrame;
 	cBuffer.data.eyePos = eyePos;
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
-
-
-
 
 void BasicEffect::Apply(ID3D11DeviceContext * deviceContext)
 {

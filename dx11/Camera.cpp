@@ -1,4 +1,4 @@
-﻿#include "Camera.h"
+#include "Camera.h"
 using namespace DirectX;
 
 Camera::~Camera()
@@ -84,7 +84,7 @@ void Camera::SetFrustum(float fovY, float aspect, float nearZ, float farZ)
 	m_FarZ = farZ;
 }
 
-void Camera::SetViewPort(const D3D11_VIEWPORT& viewPort)
+void Camera::SetViewPort(const D3D11_VIEWPORT & viewPort)
 {
 	m_ViewPort = viewPort;
 }
@@ -118,13 +118,13 @@ void FirstPersonCamera::SetPosition(const XMFLOAT3& pos)
 	m_Transform.SetPosition(pos);
 }
 
-void FirstPersonCamera::LookAt(const XMFLOAT3& pos, const XMFLOAT3& target, const XMFLOAT3& up)
+void FirstPersonCamera::LookAt(const XMFLOAT3 & pos, const XMFLOAT3 & target,const XMFLOAT3 & up)
 {
 	m_Transform.SetPosition(pos);
 	m_Transform.LookAt(target, up);
 }
 
-void FirstPersonCamera::LookTo(const XMFLOAT3& pos, const XMFLOAT3& to, const XMFLOAT3& up)
+void FirstPersonCamera::LookTo(const XMFLOAT3 & pos, const XMFLOAT3 & to, const XMFLOAT3 & up)
 {
 	m_Transform.SetPosition(pos);
 	m_Transform.LookTo(to, up);
@@ -251,7 +251,7 @@ void ThirdPersonCamera::SetRotationY(float rad)
 	m_Transform.Translate(m_Transform.GetForwardAxis(), -m_Distance);
 }
 
-void ThirdPersonCamera::SetTarget(const XMFLOAT3& target)
+void ThirdPersonCamera::SetTarget(const XMFLOAT3 & target)
 {
 	m_Target = target;
 }

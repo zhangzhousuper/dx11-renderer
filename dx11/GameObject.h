@@ -1,5 +1,5 @@
 //***************************************************************************************
-// GameObject.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
+// GameObject.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 简易游戏对象
@@ -8,9 +8,8 @@
 
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
+
 #include "Model.h"
-#include "Effects.h"
-#include "Geometry.h"
 #include "Transform.h"
 
 class GameObject

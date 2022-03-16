@@ -1,4 +1,4 @@
-﻿#include "Transform.h"
+#include "Transform.h"
 
 using namespace DirectX;
 
@@ -147,7 +147,7 @@ void Transform::Rotate(const XMFLOAT3& eulerAnglesInRadian)
 void Transform::RotateAxis(const XMFLOAT3& axis, float radian)
 {
 	XMVECTOR rotationVec = XMLoadFloat3(&m_Rotation);
-	XMMATRIX R = XMMatrixRotationRollPitchYawFromVector(rotationVec) *
+	XMMATRIX R = XMMatrixRotationRollPitchYawFromVector(rotationVec) * 
 		XMMatrixRotationAxis(XMLoadFloat3(&axis), radian);
 	XMFLOAT4X4 rotMatrix;
 	XMStoreFloat4x4(&rotMatrix, R);
