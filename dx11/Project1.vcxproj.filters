@@ -139,16 +139,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Cube.hlsli">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="HLSL\LightHelper.hlsli" />
     <None Include="HLSL\Basic.hlsli" />
     <None Include="HLSL\Light.hlsli" />
-    <None Include="Model\ground.mtl" />
-    <None Include="Model\ground_20.mbo" />
-    <None Include="Model\house.mtl" />
-    <None Include="Model\tree.mtl" />
+    <None Include="Project1.vcxproj.user" />
+    <None Include="Model\house.mbo" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\BasicObject_VS.hlsl" />
@@ -167,7 +162,6 @@
     <Image Include="Texture\water.dds" />
     <Image Include="Texture\WireFence.dds" />
     <Image Include="Texture\WoodCrate.dds" />
-    <Image Include="Model\grass.dds" />
     <Image Include="Model\house.png">
       <Filter>资源文件</Filter>
     </Image>

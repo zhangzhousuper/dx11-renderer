@@ -8,10 +8,10 @@
 
 #ifndef EFFECTS_H
 #define EFFECTS_H
-
 #include <memory>
 #include "LightHelper.h"
 #include "RenderStates.h"
+
 
 class IEffect
 {
@@ -50,17 +50,17 @@ public:
 
 	
 
-	// 初始化所需资源
+	// 初始化Basic.fx所需资源并初始化渲染状态
 	bool InitAll(ID3D11Device * device);
 
 
-	//
+	// 
 	// 渲染模式的变更
 	//
 
 	// 默认状态来绘制
 	void SetRenderDefault(ID3D11DeviceContext * deviceContext, RenderType type);
-
+	
 	//
 	// 矩阵设置
 	//
@@ -68,7 +68,7 @@ public:
 	void XM_CALLCONV SetWorldMatrix(DirectX::FXMMATRIX W);
 	void XM_CALLCONV SetViewMatrix(DirectX::FXMMATRIX V);
 	void XM_CALLCONV SetProjMatrix(DirectX::FXMMATRIX P);
-
+	
 	//
 	// 光照、材质和纹理相关设置
 	//
@@ -81,6 +81,9 @@ public:
 	void SetSpotLight(size_t pos, const SpotLight& spotLight);
 
 	void SetMaterial(const Material& material);
+
+
+	void SetTextureUsed(bool isUsed);
 
 	void SetTextureDiffuse(ID3D11ShaderResourceView * textureDiffuse);
 	

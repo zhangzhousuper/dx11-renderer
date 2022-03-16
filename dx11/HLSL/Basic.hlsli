@@ -15,19 +15,25 @@ cbuffer CBChangesEveryObjectDrawing : register(b1)
     Material g_Material;
 }
 
-cbuffer CBChangesEveryFrame : register(b2)
+cbuffer CBDrawingStates : register(b2)
+{
+    int g_TextureUsed;
+    float3 g_Pad;
+}
+
+cbuffer CBChangesEveryFrame : register(b3)
 {
     matrix g_View;
     float3 g_EyePosW;
-    float g_Pad;
+    float g_Pad2;
 }
 
-cbuffer CBChangesOnResize : register(b3)
+cbuffer CBChangesOnResize : register(b4)
 {
     matrix g_Proj;
 }
 
-cbuffer CBChangesRarely : register(b4)
+cbuffer CBChangesRarely : register(b5)
 {
     DirectionalLight g_DirLight[5];
     PointLight g_PointLight[5];
@@ -41,13 +47,11 @@ struct VertexPosNormalTex
     float2 Tex : TEXCOORD;
 };
 
-
-
 struct VertexPosHWNormalTex
 {
     float4 PosH : SV_POSITION;
-    float3 PosW : POSITION;
-    float NormalW : NORMAL;
+    float3 PosW : POSITION; // 在世界中的位置
+    float3 NormalW : NORMAL; // 法向量在世界中的方向
     float2 Tex : TEXCOORD;
 };
 
@@ -59,4 +63,6 @@ struct InstancePosNormalTex
     matrix World : World;
     matrix WorldInvTranspose : WorldInvTranspose;
 };
+
+
 

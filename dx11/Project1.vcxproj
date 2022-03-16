@@ -189,16 +189,11 @@
     <ClCompile Include="WICTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Cube.hlsli">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </None>
     <None Include="HLSL\Basic.hlsli" />
     <None Include="HLSL\Light.hlsli" />
     <None Include="HLSL\LightHelper.hlsli" />
-    <None Include="Model\ground.mtl" />
-    <None Include="Model\ground_20.mbo" />
-    <None Include="Model\house.mtl" />
-    <None Include="Model\tree.mtl" />
+    <None Include="Model\house.mbo" />
+    <None Include="Project1.vcxproj.user" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\BasicObject_VS.hlsl">
@@ -227,7 +222,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Model\grass.dds" />
     <Image Include="Model\house.png" />
     <Image Include="Texture\brick.dds" />
     <Image Include="Texture\bricks.dds" />
