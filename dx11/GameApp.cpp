@@ -6,7 +6,8 @@ using namespace DirectX;
 
 GameApp::GameApp(HINSTANCE hInstance)
 	: D3DApp(hInstance),
-	m_CameraMode(CameraMode::FirstPerson)
+	m_CameraMode(CameraMode::Free),
+	m_SkyBoxMode(SkyBoxMode::Daylight)
 {
 }
 
@@ -25,12 +26,14 @@ bool GameApp::Init()
 	if (!m_BasicEffect.InitAll(m_pd3dDevice.Get()))
 		return false;
 
+	if (!m_SkyEffect.InitAll(m_pd3dDevice.Get()))
+		return false;
 	if (!InitResource())
 		return false;
 
 	// 初始化鼠标，键盘不需要
 	m_pMouse->SetWindow(m_hMainWnd);
-	m_pMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+	m_pMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 
 	return true;
 }
@@ -98,78 +101,57 @@ void GameApp::UpdateScene(float dt)
 	Keyboard::State keyState = m_pKeyboard->GetState();
 	m_KeyboardTracker.Update(keyState);
 
-	// ******************
-	// 记录并更新物体位置和旋转弧度
-	//
-	static float theta = 0.0f, phi = 0.0f;
-	static XMMATRIX Left = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
-	static XMMATRIX Top = XMMatrixTranslation(0.0f, 4.0f, 0.0f);
-	static XMMATRIX Right = XMMatrixTranslation(5.0f, 0.0f, 0.0f);
-	static XMMATRIX Bottom = XMMatrixTranslation(0.0f, -4.0f, 0.0f);
-
-	theta += dt * 0.5f;
-	phi += dt * 0.3f;
-	// 更新物体运动
-	m_Sphere.GetTransform().SetPosition(-5.0f, 0.0f, 0.0f);
-	m_Cube.GetTransform().SetPosition(0.0f, 4.0f, 0.0f);
-	m_Cube.GetTransform().SetRotation(-phi, theta, 0.0f);
-	m_Cylinder.GetTransform().SetPosition(5.0f, 0.0f, 0.0f);
-	m_Cylinder.GetTransform().SetRotation(phi, theta, 0.0f);
-	m_House.GetTransform().SetPosition(0.0f, -4.0f, 0.0f);
-	m_House.GetTransform().SetRotation(0.0f, theta, 0.0f);
-	m_House.GetTransform().SetScale(0.005f, 0.005f, 0.005f);
-	m_Triangle.GetTransform().SetRotation(0.0f, theta, 0.0f);
+	auto cam1st = std::dynamic_pointer_cast<FirstPersonCamera>(m_pCamera);
 
 	// ******************
-	// 拾取检测
+	// 自由摄像机的操作
 	//
-	m_PickedObjStr = L"无";
-	Ray ray = Ray::ScreenToRay(*m_pCamera, (float)mouseState.x, (float)mouseState.y);
+
+	// 方向移动
+	if (keyState.IsKeyDown(Keyboard::W))
+		cam1st->MoveForward(dt * 6.0f);
+	if (keyState.IsKeyDown(Keyboard::S))
+		cam1st->MoveForward(dt * -6.0f);
+	if (keyState.IsKeyDown(Keyboard::A))
+		cam1st->Strafe(dt * -6.0f);
+	if (keyState.IsKeyDown(Keyboard::D))
+		cam1st->Strafe(dt * 6.0f);
+
+	// 在鼠标没进入窗口前仍为ABSOLUTE模式
+	if (mouseState.positionMode == Mouse::MODE_RELATIVE)
+	{
+		cam1st->Pitch(mouseState.y * dt * 1.25f);
+		cam1st->RotateY(mouseState.x * dt * 1.25f);
+	}
 	
-	// 三角形顶点变换
-	static XMVECTOR V[3];
-	for (int i = 0; i < 3; ++i)
-	{
-		V[i] = XMVector3TransformCoord(XMLoadFloat3(&m_TriangleMesh.vertexVec[i].pos), 
-			XMMatrixRotationY(theta));
-	}
 
-	bool hitObject = false;
-	if (ray.Hit(m_BoundingSphere))
-	{
-		m_PickedObjStr = L"球体";
-		hitObject = true;
-	}
-	else if (ray.Hit(m_Cube.GetBoundingOrientedBox()))
-	{
-		m_PickedObjStr = L"立方体";
-		hitObject = true;
-	}
-	else if (ray.Hit(m_Cylinder.GetBoundingOrientedBox()))
-	{
-		m_PickedObjStr = L"圆柱体";
-		hitObject = true;
-	}
-	else if (ray.Hit(m_House.GetBoundingOrientedBox()))
-	{
-		m_PickedObjStr = L"房屋";
-		hitObject = true;
-	}
-	else if (ray.Hit(V[0], V[1], V[2]))
-	{
-		m_PickedObjStr = L"三角形";
-		hitObject = true;
-	}
-
-	if (hitObject == true && m_MouseTracker.leftButton == Mouse::ButtonStateTracker::PRESSED)
-	{
-		std::wstring wstr = L"你点击了";
-		wstr += m_PickedObjStr + L"!";
-		MessageBox(nullptr, wstr.c_str(), L"注意", 0);
-	}
+	// 更新观察矩阵
+	m_BasicEffect.SetViewMatrix(m_pCamera->GetViewXM());
+	m_BasicEffect.SetEyePos(m_pCamera->GetPosition());
 
 	// 重置滚轮值
 	m_pMouse->ResetScrollWheelValue();
+
+	// 选择天空盒
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1))
+	{
+		m_SkyBoxMode = SkyBoxMode::Daylight;
+		m_BasicEffect.SetTextureCube(m_pDaylight->GetTextureCube());
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2))
+	{
+		m_SkyBoxMode = SkyBoxMode::Sunset;
+		m_BasicEffect.SetTextureCube(m_pSunset->GetTextureCube());
+	}
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3))
+	{
+		m_SkyBoxMode = SkyBoxMode::Desert;
+		m_BasicEffect.SetTextureCube(m_pDesert->GetTextureCube());
+	}
+	
+	// 退出程序，这里应向窗口发送销毁信息
+	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape))
+		SendMessage(MainWnd(), WM_DESTROY, 0, 0);
 }
 
 void GameApp::DrawScene()
@@ -183,16 +165,27 @@ void GameApp::DrawScene()
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&Colors::Black));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	// 绘制不需要纹理的模型
-	m_BasicEffect.SetTextureUsed(false);
-	m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	m_Cube.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	m_Cylinder.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-	m_Triangle.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-
-	// 绘制需要纹理的模型
+	// 绘制模型
+	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get(), BasicEffect::RenderObject);
+	m_BasicEffect.SetReflectionEnabled(true);
 	m_BasicEffect.SetTextureUsed(true);
-	m_House.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_Sphere.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+
+	m_BasicEffect.SetReflectionEnabled(false);
+	m_Ground.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_Cylinder.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+
+
+	// 绘制天空盒
+	m_SkyEffect.SetRenderDefault(m_pd3dImmediateContext.Get());
+	switch (m_SkyBoxMode)
+	{
+	case SkyBoxMode::Daylight: m_pDaylight->Draw(m_pd3dImmediateContext.Get(), m_SkyEffect, *m_pCamera); break;
+	case SkyBoxMode::Sunset: m_pSunset->Draw(m_pd3dImmediateContext.Get(), m_SkyEffect, *m_pCamera); break;
+	case SkyBoxMode::Desert: m_pDesert->Draw(m_pd3dImmediateContext.Get(), m_SkyEffect, *m_pCamera); break;
+	}
+	
+
 
 	// ******************
 	// 绘制Direct2D部分
@@ -200,7 +193,17 @@ void GameApp::DrawScene()
 	if (m_pd2dRenderTarget != nullptr)
 	{
 		m_pd2dRenderTarget->BeginDraw();
-		std::wstring text = L"当前拾取物体: " + m_PickedObjStr;
+		std::wstring text = L"当前摄像机模式: 自由视角  Esc退出\n"
+			L"鼠标移动控制视野 W/S/A/D移动\n"
+			L"切换天空盒: 1-白天 2-日落 3-沙漠\n"
+			L"当前天空盒: ";
+
+		switch (m_SkyBoxMode)
+		{
+		case SkyBoxMode::Daylight: text += L"白天"; break;
+		case SkyBoxMode::Sunset: text += L"日落"; break;
+		case SkyBoxMode::Desert: text += L"沙漠"; break;
+		}
 
 		m_pd2dRenderTarget->DrawTextW(text.c_str(), (UINT32)text.length(), m_pTextFormat.Get(),
 			D2D1_RECT_F{ 0.0f, 0.0f, 600.0f, 200.0f }, m_pColorBrush.Get());
@@ -215,31 +218,69 @@ void GameApp::DrawScene()
 bool GameApp::InitResource()
 {
 	// ******************
+	// 初始化天空盒相关
+
+	m_pDaylight = std::make_unique<SkyRender>();
+	HR(m_pDaylight->InitResource(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(),
+		L"Texture\\daylight.jpg", 
+		5000.0f));
+
+	m_pSunset = std::make_unique<SkyRender>();
+	HR(m_pSunset->InitResource(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(),
+		std::vector<std::wstring>{
+		L"Texture\\sunset_posX.bmp", L"Texture\\sunset_negX.bmp",
+			L"Texture\\sunset_posY.bmp", L"Texture\\sunset_negY.bmp",
+			L"Texture\\sunset_posZ.bmp", L"Texture\\sunset_negZ.bmp", },
+		5000.0f));
+
+	m_pDesert = std::make_unique<SkyRender>();
+	HR(m_pDesert->InitResource(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(),
+		L"Texture\\desertcube1024.dds",
+		5000.0f));
+
+	m_BasicEffect.SetTextureCube(m_pDaylight->GetTextureCube());
+	// ******************
 	// 初始化游戏对象
 	//
 	
-	// 球体(预先设好包围球)
-	m_Sphere.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateSphere()));
-	m_BoundingSphere.Center = XMFLOAT3(-5.0f, 0.0f, 0.0f);
-	m_BoundingSphere.Radius = 1.0f;
-	// 立方体
-	m_Cube.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateBox()));
-	// 圆柱体
-	m_Cylinder.SetModel(Model(m_pd3dDevice.Get(), Geometry::CreateCylinder()));
-	// 房屋
-	m_ObjReader.Read(L"Model\\house.mbo", L"Model\\house.obj");
-	m_House.SetModel(Model(m_pd3dDevice.Get(), m_ObjReader));
-	// 三角形(带反面)
-	m_TriangleMesh.vertexVec.assign({
-		VertexPosNormalTex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2()),
-		VertexPosNormalTex(XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2()),
-		VertexPosNormalTex(XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2()),
-		VertexPosNormalTex(XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2()),
-		VertexPosNormalTex(XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2()),
-		VertexPosNormalTex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2())
-		});
-	m_TriangleMesh.indexVec.assign({ 0, 1, 2, 3, 4, 5 });
-	m_Triangle.SetModel(Model(m_pd3dDevice.Get(), m_TriangleMesh));
+	Model model;
+	// 球体
+	model.SetMesh(m_pd3dDevice.Get(), Geometry::CreateSphere(1.0f, 30, 30));
+	model.modelParts[0].material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	model.modelParts[0].material.diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	model.modelParts[0].material.specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
+	model.modelParts[0].material.reflect = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), 
+		L"Texture\\stone.dds", 
+		nullptr, 
+		model.modelParts[0].texDiffuse.GetAddressOf()));
+	m_Sphere.SetModel(std::move(model));
+	// 地面
+	model.SetMesh(m_pd3dDevice.Get(), Geometry::CreatePlane(XMFLOAT2(10.0f, 10.0f), XMFLOAT2(5.0f, 5.0f)));
+	model.modelParts[0].material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	model.modelParts[0].material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	model.modelParts[0].material.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f); 
+	model.modelParts[0].material.reflect = XMFLOAT4();
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(),
+		L"Texture\\floor.dds",
+		nullptr,
+		model.modelParts[0].texDiffuse.GetAddressOf()));
+	m_Ground.SetModel(std::move(model));
+	m_Ground.GetTransform().SetPosition(0.0f, -3.0f, 0.0f);
+	// 柱体
+	model.SetMesh(m_pd3dDevice.Get(),
+		Geometry::CreateCylinder(0.5f, 2.0f));
+	model.modelParts[0].material.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	model.modelParts[0].material.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	model.modelParts[0].material.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f);
+	model.modelParts[0].material.reflect = XMFLOAT4();
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(),
+		L"Texture\\bricks.dds",
+		nullptr,
+		model.modelParts[0].texDiffuse.GetAddressOf()));
+	m_Cylinder.SetModel(std::move(model));
+	m_Cylinder.GetTransform().SetPosition(0.0f, -1.99f, 0.0f);
+
 
 	// ******************
 	// 初始化摄像机
@@ -259,25 +300,30 @@ bool GameApp::InitResource()
 	//
 
 	// 方向光
-	DirectionalLight dirLight;
-	dirLight.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	dirLight.diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	dirLight.specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 16.0f);
-	dirLight.direction = XMFLOAT3(-0.707f, -0.707f, 0.707f);
-	m_BasicEffect.SetDirLight(0, dirLight);
-
-	// 默认只按对象绘制
-	m_BasicEffect.SetRenderDefault(m_pd3dImmediateContext.Get(), BasicEffect::RenderObject);
+	DirectionalLight dirLight[4];
+	dirLight[0].ambient = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	dirLight[0].diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	dirLight[0].specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
+	dirLight[0].direction = XMFLOAT3(-0.577f, -0.577f, 0.577f);
+	dirLight[1] = dirLight[0];
+	dirLight[1].direction = XMFLOAT3(0.577f, -0.577f, 0.577f);
+	dirLight[2] = dirLight[0];
+	dirLight[2].direction = XMFLOAT3(0.577f, -0.577f, -0.577f);
+	dirLight[3] = dirLight[0];
+	dirLight[3].direction = XMFLOAT3(-0.577f, -0.577f, -0.577f);
+	for (int i = 0; i < 4; ++i)
+		m_BasicEffect.SetDirLight(i, dirLight[i]);
 
 
 	// ******************
 	// 设置调试对象名
 	//
-	m_Cube.SetDebugObjectName("Cube");
 	m_Cylinder.SetDebugObjectName("Cylinder");
-	m_House.SetDebugObjectName("House");
+	m_Ground.SetDebugObjectName("Ground");
 	m_Sphere.SetDebugObjectName("Sphere");
-	m_Triangle.SetDebugObjectName("Triangle");
+	m_pDaylight->SetDebugObjectName("DayLight");
+	m_pSunset->SetDebugObjectName("Sunset");
+	m_pDesert->SetDebugObjectName("Desert");
 
 	return true;
 }

@@ -1,6 +1,7 @@
 #include "LightHelper.hlsli"
 
 Texture2D g_DiffuseMap : register(t0);
+TextureCube g_TexCube : register(t1);
 SamplerState g_Sam : register(s0);
 
 
@@ -18,7 +19,8 @@ cbuffer CBChangesEveryObjectDrawing : register(b1)
 cbuffer CBDrawingStates : register(b2)
 {
     int g_TextureUsed;
-    float3 g_Pad;
+    int g_ReflectionEnabled;
+    float2 g_Pad;
 }
 
 cbuffer CBChangesEveryFrame : register(b3)

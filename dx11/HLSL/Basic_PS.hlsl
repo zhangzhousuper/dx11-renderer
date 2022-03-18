@@ -55,8 +55,17 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
         spec += S;
     }
   
-    
     float4 litColor = texColor * (ambient + diffuse) + spec;
+
+    if (g_ReflectionEnabled)
+    {
+        float3 incident = -toEyeW;
+        float3 reflectionVector = reflect(incident, pIn.NormalW);
+        float4 reflectionColor = g_TexCube.Sample(g_Sam, reflectionVector);
+
+        litColor += g_Material.Reflect * reflectionColor;
+    }
+    
     litColor.a = texColor.a * g_Material.Diffuse.a;
     return litColor;
 }

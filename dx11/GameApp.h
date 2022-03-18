@@ -5,6 +5,7 @@
 #include "d3dApp.h"
 #include "Camera.h"
 #include "GameObject.h"
+#include "SkyRender.h"
 #include "ObjReader.h"
 #include "Collision.h"
 class GameApp : public D3DApp
@@ -12,7 +13,8 @@ class GameApp : public D3DApp
 public:
 	// 摄像机模式
 	enum class CameraMode { FirstPerson, ThirdPerson, Free };
-	
+	// 天空盒模式
+	enum class SkyBoxMode { Daylight, Sunset, Desert };
 public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
@@ -33,17 +35,16 @@ private:
 
 	
 	GameObject m_Sphere;										// 球
-	GameObject m_Cube;										    // 立方体
-	GameObject m_Cylinder;									    // 圆柱体
-	GameObject m_House;										    // 房屋
-	GameObject m_Triangle;									    // 三角形
-	DirectX::BoundingSphere m_BoundingSphere;				    // 球的包围盒
-
-	Geometry::MeshData<> m_TriangleMesh;						// 三角形网格模型
-
-	std::wstring m_PickedObjStr;								// 已经拾取的对象名
+	GameObject m_Ground;										// 地面
+	GameObject m_Cylinder;									    // 圆柱
 
 	BasicEffect m_BasicEffect;								    // 对象渲染特效管理
+
+	SkyEffect m_SkyEffect;									    // 天空盒特效管理
+	std::unique_ptr<SkyRender> m_pDaylight;					    // 天空盒(白天)
+	std::unique_ptr<SkyRender> m_pSunset;						// 天空盒(日落)
+	std::unique_ptr<SkyRender> m_pDesert;						// 天空盒(沙漠)
+	SkyBoxMode m_SkyBoxMode;									// 天空盒模式
 
 	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
 	CameraMode m_CameraMode;									// 摄像机模式
