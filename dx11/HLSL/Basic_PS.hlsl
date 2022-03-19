@@ -1,25 +1,25 @@
 #include "Basic.hlsli"
 
-// 像素着色器(3D)
+// 锟斤拷锟斤拷锟斤拷色锟斤拷(3D)
 float4 PS(VertexPosHWNormalTex pIn) : SV_Target
 {
-    // 若不使用纹理，则使用默认白色
+    // 锟斤拷锟斤拷使锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷使锟斤拷默锟较帮拷色
     float4 texColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 
     if (g_TextureUsed)
     {
         texColor = g_DiffuseMap.Sample(g_Sam, pIn.Tex);
-        // 提前进行Alpha裁剪，对不符合要求的像素可以避免后续运算
+        // 锟斤拷前锟斤拷锟斤拷Alpha锟矫硷拷锟斤拷锟皆诧拷锟斤拷锟斤拷要锟斤拷锟斤拷锟斤拷乜锟斤拷员锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
         clip(texColor.a - 0.1f);
     }
     
-    // 标准化法向量
+    // 锟斤拷准锟斤拷锟斤拷锟斤拷锟斤拷
     pIn.NormalW = normalize(pIn.NormalW);
 
-    // 顶点指向眼睛的向量
+    // 锟斤拷锟斤拷指锟斤拷锟桔撅拷锟斤拷锟斤拷锟斤拷
     float3 toEyeW = normalize(g_EyePosW - pIn.PosW);
 
-    // 初始化为0 
+    // 锟斤拷始锟斤拷为0 
     float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -57,6 +57,7 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
   
     float4 litColor = texColor * (ambient + diffuse) + spec;
 
+   // 鍙嶅皠
     if (g_ReflectionEnabled)
     {
         float3 incident = -toEyeW;
@@ -64,6 +65,15 @@ float4 PS(VertexPosHWNormalTex pIn) : SV_Target
         float4 reflectionColor = g_TexCube.Sample(g_Sam, reflectionVector);
 
         litColor += g_Material.Reflect * reflectionColor;
+    }
+    // 鎶樺皠
+    if (g_RefractionEnabled)
+    {
+        float3 incident = -toEyeW;
+        float3 refractionVector = refract(incident, pIn.NormalW, g_Eta);
+        float4 refractionColor = g_TexCube.Sample(g_Sam, refractionVector);
+
+        litColor += g_Material.Reflect * refractionColor;
     }
     
     litColor.a = texColor.a * g_Material.Diffuse.a;

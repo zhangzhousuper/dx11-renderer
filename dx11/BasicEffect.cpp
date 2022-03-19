@@ -33,7 +33,8 @@ public:
 	{
 		int textureUsed;
 		int reflectionEnabled;
-		DirectX::XMFLOAT2 pad;
+		int refractionEnabled;
+		float eta;	// 空气/介质折射率
 	};
 
 	struct CBChangesEveryFrame
@@ -312,6 +313,20 @@ void BasicEffect::SetReflectionEnabled(bool isEnable)
 {
 	auto& cBuffer = pImpl->m_CBStates;
 	cBuffer.data.reflectionEnabled = isEnable;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetRefractionEnabled(bool isEnable)
+{
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.refractionEnabled = isEnable;
+	pImpl->m_IsDirty = cBuffer.isDirty = true;
+}
+
+void BasicEffect::SetRefractionEta(float eta)
+{
+	auto& cBuffer = pImpl->m_CBStates;
+	cBuffer.data.eta = eta;
 	pImpl->m_IsDirty = cBuffer.isDirty = true;
 }
 

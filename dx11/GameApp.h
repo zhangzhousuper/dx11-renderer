@@ -15,6 +15,8 @@ public:
 	enum class CameraMode { FirstPerson, ThirdPerson, Free };
 	// 天空盒模式
 	enum class SkyBoxMode { Daylight, Sunset, Desert };
+	// 球体当前模式
+	enum class SphereMode { None, Reflection, Refraction };
 public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
@@ -23,6 +25,7 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
+	void DrawScene(bool drawCenterSphere);
 
 private:
 	bool InitResource();
@@ -38,13 +41,17 @@ private:
 	GameObject m_Ground;										// 地面
 	GameObject m_Cylinder;									    // 圆柱
 
+	float m_SphereRad;											// 球体旋转弧度
+	
 	BasicEffect m_BasicEffect;								    // 对象渲染特效管理
-
 	SkyEffect m_SkyEffect;									    // 天空盒特效管理
-	std::unique_ptr<SkyRender> m_pDaylight;					    // 天空盒(白天)
-	std::unique_ptr<SkyRender> m_pSunset;						// 天空盒(日落)
-	std::unique_ptr<SkyRender> m_pDesert;						// 天空盒(沙漠)
+	std::unique_ptr<DynamicSkyRender> m_pDaylight;			    // 天空盒(白天)
+	std::unique_ptr<DynamicSkyRender> m_pSunset;				// 天空盒(日落)
+	std::unique_ptr<DynamicSkyRender> m_pDesert;				// 天空盒(沙漠)
 	SkyBoxMode m_SkyBoxMode;									// 天空盒模式
+
+	SphereMode m_SphereMode;									// 球渲染模式
+	float m_Eta;												// 空气/介质折射率
 
 	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
 	CameraMode m_CameraMode;									// 摄像机模式

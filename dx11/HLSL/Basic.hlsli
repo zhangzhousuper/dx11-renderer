@@ -20,7 +20,8 @@ cbuffer CBDrawingStates : register(b2)
 {
     int g_TextureUsed;
     int g_ReflectionEnabled;
-    float2 g_Pad;
+    int g_RefractionEnabled;
+    float g_Eta;
 }
 
 cbuffer CBChangesEveryFrame : register(b3)
@@ -52,8 +53,8 @@ struct VertexPosNormalTex
 struct VertexPosHWNormalTex
 {
     float4 PosH : SV_POSITION;
-    float3 PosW : POSITION; // 在世界中的位置
-    float3 NormalW : NORMAL; // 法向量在世界中的方向
+    float3 PosW : POSITION; // 锟斤拷锟斤拷锟斤拷锟叫碉拷位锟斤拷
+    float3 NormalW : NORMAL; // 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟叫的凤拷锟斤拷
     float2 Tex : TEXCOORD;
 };
 

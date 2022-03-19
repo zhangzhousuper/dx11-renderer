@@ -91,12 +91,12 @@ public:
 	void SetEyePos(const DirectX::XMFLOAT3& eyePos);
 	
 	//
-	// 状态开关设置
+	// 状态开关设置，反射与折射不会共存
 	//
 
 	void SetReflectionEnabled(bool isEnable);
-	
-
+	void SetRefractionEnabled(bool isEnable);
+	void SetRefractionEta(float eta);	// 空气/介质折射比
 	// 应用常量缓冲区和纹理资源的变更
 	void Apply(ID3D11DeviceContext * deviceContext) override;
 	
