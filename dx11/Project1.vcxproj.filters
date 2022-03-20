@@ -161,6 +161,9 @@
     <FxCompile Include="HLSL\Sky_VS.hlsl" />
     <FxCompile Include="HLSL\Basicinstance_VS.hlsl" />
     <FxCompile Include="HLSL\Sky_PS.hlsl" />
+    <FxCompile Include="HLSL\NormalMapObject_VS.hlsl" />
+    <FxCompile Include="HLSL\NormalMapInstance_VS.hlsl" />
+    <FxCompile Include="HLSL\NormalMap_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />

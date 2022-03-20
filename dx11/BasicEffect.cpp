@@ -75,14 +75,20 @@ public:
 
 	ComPtr<ID3D11VertexShader> m_pBasicInstanceVS;
 	ComPtr<ID3D11VertexShader> m_pBasicObjectVS;
+	ComPtr<ID3D11VertexShader> m_pNormalMapInstanceVS;
+	ComPtr<ID3D11VertexShader> m_pNormalMapObjectVS;
 
 	ComPtr<ID3D11PixelShader> m_pBasicPS;
+	ComPtr<ID3D11PixelShader> m_pNormalMapPS;
 
 	ComPtr<ID3D11InputLayout> m_pInstancePosNormalTexLayout;
-	ComPtr<ID3D11InputLayout> m_pVertexPosNormalTexLayout;
+	ComPtr<ID3D11InputLayout> m_pInstancePosNormalTangentTexLayout;
+	ComPtr<ID3D11InputLayout> m_pVertexPosNormalTangentTexLayout;
+	ComPtr<ID3D11InputLayout> m_pVertexPosNormalTexLayout;		
 
-	ComPtr<ID3D11ShaderResourceView> m_pTextureDiffuse;		// 漫反射纹理
-	ComPtr<ID3D11ShaderResourceView> m_pTextureCube;			// 天空盒纹理
+	ComPtr<ID3D11ShaderResourceView> m_pTextureDiffuse;		                // 漫反射纹理
+	ComPtr<ID3D11ShaderResourceView> m_pTextureNormalMap;		            // 法线纹理
+	ComPtr<ID3D11ShaderResourceView> m_pTextureCube;	
 };
 
 //
@@ -154,6 +160,20 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 		{ "WorldInvTranspose", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 112, D3D11_INPUT_PER_INSTANCE_DATA, 1}
 	};
 
+	D3D11_INPUT_ELEMENT_DESC m_pNormalmapInstLayout[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "World", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "World", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "World", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "World", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "WorldInvTranspose", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "WorldInvTranspose", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 80, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "WorldInvTranspose", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 96, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "WorldInvTranspose", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 112, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+	};
 	// ******************
 	// 创建顶点着色器
 	//
@@ -170,13 +190,26 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	HR(device->CreateInputLayout(VertexPosNormalTex::inputLayout, ARRAYSIZE(VertexPosNormalTex::inputLayout),
 		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexPosNormalTexLayout.GetAddressOf()));
 
+	HR(CreateShaderFromFile(L"HLSL\\NormalMapInstance_VS.cso", L"HLSL\\NormalMapInstance_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalMapInstanceVS.GetAddressOf()));
+	// 创建顶点布局
+	HR(device->CreateInputLayout(m_pNormalmapInstLayout, ARRAYSIZE(m_pNormalmapInstLayout),
+		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pInstancePosNormalTangentTexLayout.GetAddressOf()));
+
+	HR(CreateShaderFromFile(L"HLSL\\NormalMapObject_VS.cso", L"HLSL\\NormalMapObject_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalMapObjectVS.GetAddressOf()));
+	// 创建顶点布局
+	HR(device->CreateInputLayout(VertexPosNormalTangentTex::inputLayout, ARRAYSIZE(VertexPosNormalTangentTex::inputLayout),
+		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexPosNormalTangentTexLayout.GetAddressOf()));
+
 	// ******************
 	// 创建像素着色器
 	//
 
 	HR(CreateShaderFromFile(L"HLSL\\Basic_PS.cso", L"HLSL\\Basic_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pBasicPS.GetAddressOf()));
-
+	HR(CreateShaderFromFile(L"HLSL\\NormalMap_PS.cso", L"HLSL\\NormalMap_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pImpl->m_pNormalMapPS.GetAddressOf()));
 
 	pImpl->m_pCBuffers.assign({
 		&pImpl->m_CBInstDrawing,
@@ -195,6 +228,8 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	// 设置调试对象名
 	D3D11SetDebugObjectName(pImpl->m_pInstancePosNormalTexLayout.Get(), "BasicEffect.InstancePosNormalTexLayout");
 	D3D11SetDebugObjectName(pImpl->m_pVertexPosNormalTexLayout.Get(), "BasicEffect.VertexPosNormalTexLayout");
+	D3D11SetDebugObjectName(pImpl->m_pInstancePosNormalTangentTexLayout.Get(), "BasicEffect.InstancePosNormalTangentTexLayout");
+	D3D11SetDebugObjectName(pImpl->m_pVertexPosNormalTangentTexLayout.Get(), "BasicEffect.VertexPosNormalTangentTexLayout");
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[0]->cBuffer.Get(), "BasicEffect.CBInstDrawing");
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[1]->cBuffer.Get(), "BasicEffect.CBObjDrawing");
 	D3D11SetDebugObjectName(pImpl->m_pCBuffers[2]->cBuffer.Get(), "BasicEffect.CBStates");
@@ -204,6 +239,9 @@ bool BasicEffect::InitAll(ID3D11Device* device)
 	D3D11SetDebugObjectName(pImpl->m_pBasicObjectVS.Get(), "BasicEffect.BasicObject_VS");
 	D3D11SetDebugObjectName(pImpl->m_pBasicInstanceVS.Get(), "BasicEffect.BasicInstance_VS");
 	D3D11SetDebugObjectName(pImpl->m_pBasicPS.Get(), "BasicEffect.Basic_PS");
+	D3D11SetDebugObjectName(pImpl->m_pNormalMapObjectVS.Get(), "BasicEffect.NormalMapObject_VS");
+	D3D11SetDebugObjectName(pImpl->m_pNormalMapInstanceVS.Get(), "BasicEffect.NormalMapInstance_VS");
+	D3D11SetDebugObjectName(pImpl->m_pNormalMapPS.Get(), "BasicEffect.NormalMap_PS");
 
 	return true;
 }
@@ -222,6 +260,35 @@ void BasicEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext, RenderTyp
 		deviceContext->IASetInputLayout(pImpl->m_pVertexPosNormalTexLayout.Get());
 		deviceContext->VSSetShader(pImpl->m_pBasicObjectVS.Get(), nullptr, 0);
 		deviceContext->PSSetShader(pImpl->m_pBasicPS.Get(), nullptr, 0);
+	}
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	deviceContext->GSSetShader(nullptr, nullptr, 0);
+	deviceContext->RSSetState(nullptr);
+	deviceContext->PSSetSamplers(0, 1, RenderStates::SSLinearWrap.GetAddressOf());
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
+	// 使用各向异性过滤获取更好的绘制质量
+	deviceContext->PSSetSamplers(0, 1, RenderStates::SSAnistropicWrap.GetAddressOf());
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+}
+
+void BasicEffect::SetRenderWithNormalMap(ID3D11DeviceContext* deviceContext, RenderType type)
+{
+	if (type == RenderInstance)
+	{
+		deviceContext->IASetInputLayout(pImpl->m_pInstancePosNormalTangentTexLayout.Get());
+		deviceContext->VSSetShader(pImpl->m_pNormalMapInstanceVS.Get(), nullptr, 0);
+		deviceContext->PSSetShader(pImpl->m_pNormalMapPS.Get(), nullptr, 0);
+	}
+	else
+	{
+		deviceContext->IASetInputLayout(pImpl->m_pVertexPosNormalTangentTexLayout.Get());
+		deviceContext->VSSetShader(pImpl->m_pNormalMapObjectVS.Get(), nullptr, 0);
+		deviceContext->PSSetShader(pImpl->m_pNormalMapPS.Get(), nullptr, 0);
 	}
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -296,7 +363,10 @@ void BasicEffect::SetTextureDiffuse(ID3D11ShaderResourceView* textureDiffuse)
 {
 	pImpl->m_pTextureDiffuse = textureDiffuse;
 }
-
+void BasicEffect::SetTextureNormalMap(ID3D11ShaderResourceView * textureNormalMap)
+{
+	pImpl->m_pTextureNormalMap = textureNormalMap;
+}
 void BasicEffect::SetTextureCube(ID3D11ShaderResourceView* textureCube)
 {
 	pImpl->m_pTextureCube = textureCube;
@@ -345,7 +415,8 @@ void BasicEffect::Apply(ID3D11DeviceContext* deviceContext)
 
 	// 设置纹理
 	deviceContext->PSSetShaderResources(0, 1, pImpl->m_pTextureDiffuse.GetAddressOf());
-	deviceContext->PSSetShaderResources(1, 1, pImpl->m_pTextureCube.GetAddressOf());
+	deviceContext->PSSetShaderResources(1, 1, pImpl->m_pTextureNormalMap.GetAddressOf());
+	deviceContext->PSSetShaderResources(2, 1, pImpl->m_pTextureCube.GetAddressOf());
 
 	if (pImpl->m_IsDirty)
 	{

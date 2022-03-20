@@ -60,6 +60,8 @@ public:
 
 	// 默认状态来绘制
 	void SetRenderDefault(ID3D11DeviceContext * deviceContext, RenderType type);
+	// 带法线贴图的绘制
+	void SetRenderWithNormalMap(ID3D11DeviceContext * deviceContext, RenderType type);
 	
 	//
 	// 矩阵设置
@@ -86,6 +88,7 @@ public:
 	void SetTextureUsed(bool isUsed);
 
 	void SetTextureDiffuse(ID3D11ShaderResourceView * textureDiffuse);
+	void SetTextureNormalMap(ID3D11ShaderResourceView * textureNormalMap);
 	void SetTextureCube(ID3D11ShaderResourceView * textureCube);
 
 	void SetEyePos(const DirectX::XMFLOAT3& eyePos);
