@@ -3,11 +3,7 @@
 
 #include <DirectXColors.h>
 #include "d3dApp.h"
-#include "Camera.h"
-#include "GameObject.h"
-#include "SkyRender.h"
-#include "ObjReader.h"
-#include "Collision.h"
+#include "ScreenGrab.h"
 class GameApp : public D3DApp
 {
 public:
@@ -24,54 +20,22 @@ public:
 	~GameApp();
 
 	bool Init();
-	void OnResize();
-	void UpdateScene(float dt);
-	void DrawScene();
-	void DrawScene(bool drawCenterSphere);
+	void Compute();
 
 private:
 	bool InitResource();
 	
 private:
+	ComPtr<ID3D11ComputeShader> m_pTextureMul_R32G32B32A32_CS;
+	ComPtr<ID3D11ComputeShader> m_pTextureMul_R8G8B8A8_CS;
 	
-	ComPtr<ID2D1SolidColorBrush> m_pColorBrush;				    // 单色笔刷
-	ComPtr<IDWriteFont> m_pFont;								// 字体
-	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
-ComPtr<ID3D11ShaderResourceView> m_FloorDiffuse;			// 地板纹理
-	ComPtr<ID3D11ShaderResourceView> m_StonesDiffuse;		    // 鹅卵石面纹理
+	ComPtr<ID3D11ShaderResourceView> m_pTextureInputA;
+	ComPtr<ID3D11ShaderResourceView> m_pTextureInputB;
 
-	Model m_GroundModel;										// 地面网格模型
-	Model m_GroundTModel;									    // 带切线的地面网格模型
-
-	GameObject m_Sphere;										// 球
-	GameObject m_Ground;										// 地面
-	GameObject m_GroundT;									    // 带切线向量的地面
-	GameObject m_Cylinder;									    // 圆柱
-	GameObject m_CylinderT;									    // 带切线向量的圆柱
-	GroundMode m_GroundMode;									// 地面模式
-
-	float m_SphereRad;											// 球体旋转弧度
-
-
-	ComPtr<ID3D11ShaderResourceView> m_BricksNormalMap;		    // 砖块法线贴图
-	ComPtr<ID3D11ShaderResourceView> m_FloorNormalMap;		    // 地面法线贴图
-	ComPtr<ID3D11ShaderResourceView> m_StonesNormalMap;		    // 石头地面法线贴图
-	bool m_EnableNormalMap;									    // 开启法线贴图
-
-	BasicEffect m_BasicEffect;								    // 对象渲染特效管理
-	SkyEffect m_SkyEffect;									    // 天空盒特效管理
-	std::unique_ptr<DynamicSkyRender> m_pDaylight;			    // 天空盒(白天)
-	std::unique_ptr<DynamicSkyRender> m_pSunset;				// 天空盒(日落)
-	std::unique_ptr<DynamicSkyRender> m_pDesert;				// 天空盒(沙漠)
-	SkyBoxMode m_SkyBoxMode;									// 天空盒模式
-
-	SphereMode m_SphereMode;									// 球渲染模式
-	float m_Eta;												// 空气/介质折射率
-
-	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
-	CameraMode m_CameraMode;									// 摄像机模式
-
-	ObjReader m_ObjReader;									    // 模型读取对象
+	ComPtr<ID3D11Texture2D> m_pTextureOutputA;
+	ComPtr<ID3D11Texture2D> m_pTextureOutputB;
+	ComPtr<ID3D11UnorderedAccessView> m_pTextureOutputA_UAV;
+	ComPtr<ID3D11UnorderedAccessView> m_pTextureOutputB_UAV;
 };
 
 

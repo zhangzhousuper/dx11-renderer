@@ -163,6 +163,7 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="ObjReader.h" />
     <ClInclude Include="RenderStates.h" />
+    <ClInclude Include="ScreenGrab.h" />
     <ClInclude Include="SkyRender.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="GameApp.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="ScreenGrab.cpp" />
     <ClCompile Include="SkyEffect.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -248,19 +250,52 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="HLSL\TextureMul_R32G32B32A32_CS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="HLSL\TextureMul_R8G8B8A8_CS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Model\house.png" />
     <Image Include="Texture\brick.dds" />
     <Image Include="Texture\bricks.dds" />
+    <Image Include="Texture\bricks_nmap.dds" />
     <Image Include="Texture\checkboard.dds" />
+    <Image Include="Texture\daylight.jpg" />
+    <Image Include="Texture\desertcube1024.dds" />
     <Image Include="Texture\flare.dds" />
     <Image Include="Texture\flarealpha.dds" />
+    <Image Include="Texture\flareoutputA.dds" />
     <Image Include="Texture\floor.dds" />
+    <Image Include="Texture\floor_nmap.dds" />
+    <Image Include="Texture\grass.dds" />
     <Image Include="Texture\ice.dds" />
+    <Image Include="Texture\Red.dds" />
+    <Image Include="Texture\stone.dds" />
+    <Image Include="Texture\stones.dds" />
+    <Image Include="Texture\stones_nmap.dds" />
+    <Image Include="Texture\sunset_negX.bmp" />
+    <Image Include="Texture\sunset_negY.bmp" />
+    <Image Include="Texture\sunset_negZ.bmp" />
+    <Image Include="Texture\sunset_posX.bmp" />
+    <Image Include="Texture\sunset_posY.bmp" />
+    <Image Include="Texture\sunset_posZ.bmp" />
+    <Image Include="Texture\tree0.dds" />
+    <Image Include="Texture\tree1.dds" />
+    <Image Include="Texture\tree2.dds" />
+    <Image Include="Texture\tree3.dds" />
     <Image Include="Texture\water.dds" />
+    <Image Include="Texture\water1.dds" />
+    <Image Include="Texture\water2.dds" />
     <Image Include="Texture\WireFence.dds" />
     <Image Include="Texture\WoodCrate.dds" />
+    <Image Include="Texture\Yellow.dds" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -81,6 +81,9 @@
     <ClInclude Include="SkyRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenGrab.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
@@ -146,6 +149,9 @@
     <ClCompile Include="SkyEffect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ScreenGrab.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\LightHelper.hlsli" />
@@ -164,6 +170,8 @@
     <FxCompile Include="HLSL\NormalMapObject_VS.hlsl" />
     <FxCompile Include="HLSL\NormalMapInstance_VS.hlsl" />
     <FxCompile Include="HLSL\NormalMap_PS.hlsl" />
+    <FxCompile Include="HLSL\TextureMul_R8G8B8A8_CS.hlsl" />
+    <FxCompile Include="HLSL\TextureMul_R32G32B32A32_CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />
@@ -179,5 +187,42 @@
     <Image Include="Model\house.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="Texture\bricks_nmap.dds" />
+    <Image Include="Texture\daylight.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\desertcube1024.dds" />
+    <Image Include="Texture\floor_nmap.dds" />
+    <Image Include="Texture\grass.dds" />
+    <Image Include="Texture\Red.dds" />
+    <Image Include="Texture\stone.dds" />
+    <Image Include="Texture\stones.dds" />
+    <Image Include="Texture\stones_nmap.dds" />
+    <Image Include="Texture\sunset_negX.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\sunset_negY.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\sunset_negZ.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\sunset_posX.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\sunset_posY.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\sunset_posZ.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Texture\tree0.dds" />
+    <Image Include="Texture\tree1.dds" />
+    <Image Include="Texture\tree2.dds" />
+    <Image Include="Texture\tree3.dds" />
+    <Image Include="Texture\water1.dds" />
+    <Image Include="Texture\water2.dds" />
+    <Image Include="Texture\Yellow.dds" />
+    <Image Include="Texture\flareoutputA.dds" />
   </ItemGroup>
 </Project>
