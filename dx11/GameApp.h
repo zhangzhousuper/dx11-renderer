@@ -1,41 +1,56 @@
 #ifndef GAMEAPP_H
 #define GAMEAPP_H
 
-#include <DirectXColors.h>
+#include <random>
 #include "d3dApp.h"
-#include "ScreenGrab.h"
+#include "Camera.h"
+#include "GameObject.h"
+#include "ObjReader.h"
+#include "Collision.h"
+#include "WavesRender.h"
 class GameApp : public D3DApp
 {
 public:
 	// 摄像机模式
 	enum class CameraMode { FirstPerson, ThirdPerson, Free };
-	// 天空盒模式
-	enum class SkyBoxMode { Daylight, Sunset, Desert };
-	// 球体当前模式
-	enum class SphereMode { None, Reflection, Refraction };
-	// 地面模式
-	enum class GroundMode { Floor, Stones };
+
 public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
 
 	bool Init();
-	void Compute();
+	void OnResize();
+	void UpdateScene(float dt);
+	void DrawScene();
 
 private:
 	bool InitResource();
-	
-private:
-	ComPtr<ID3D11ComputeShader> m_pTextureMul_R32G32B32A32_CS;
-	ComPtr<ID3D11ComputeShader> m_pTextureMul_R8G8B8A8_CS;
-	
-	ComPtr<ID3D11ShaderResourceView> m_pTextureInputA;
-	ComPtr<ID3D11ShaderResourceView> m_pTextureInputB;
 
-	ComPtr<ID3D11Texture2D> m_pTextureOutputA;
-	ComPtr<ID3D11Texture2D> m_pTextureOutputB;
-	ComPtr<ID3D11UnorderedAccessView> m_pTextureOutputA_UAV;
-	ComPtr<ID3D11UnorderedAccessView> m_pTextureOutputB_UAV;
+private:
+
+	ComPtr<ID2D1SolidColorBrush> m_pColorBrush;				    // 单色笔刷
+	ComPtr<IDWriteFont> m_pFont;								// 字体
+	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
+
+	std::mt19937 m_RandEngine;									// 随机数生成器
+	std::uniform_int_distribution<UINT> m_RowRange;				// 行索引范围
+	std::uniform_int_distribution<UINT> m_ColRange;				// 列索引范围
+	std::uniform_real_distribution<float> m_MagnitudeRange;		// 振幅范围
+
+	BasicEffect m_BasicEffect;									// 对象渲染特效管理
+
+	GameObject m_Land;											// 地面对象
+	GameObject m_WireFence;										// 篱笆盒
+
+	std::unique_ptr<CpuWavesRender> m_pCpuWavesRender;			// CPU波浪渲染器
+	std::unique_ptr<GpuWavesRender> m_pGpuWavesRender;			// GPU波浪渲染器
+
+	float m_BaseTime;											// 控制水波生成的基准时间
+
+	bool m_EnabledFog;											// 开启雾效
+	bool m_EnabledGpuWaves;										// 开启GPU波浪绘制
+
+	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
 };
 
 

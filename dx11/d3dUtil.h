@@ -1,5 +1,5 @@
 //***************************************************************************************
-// d3dUtil.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// d3dUtil.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // D3D实用工具集
@@ -14,8 +14,11 @@
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <d3dcompiler.h>
+#include <wincodec.h>			// 使用ScreenGrab需要包含
 #include <vector>
 #include <string>
+#include <random>
+#include "ScreenGrab.h"
 #include "DDSTextureLoader.h"	
 #include "WICTextureLoader.h"
 
@@ -31,6 +34,8 @@
 
 // 安全COM组件释放宏
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = nullptr; } }
+
+
 
 //
 // 辅助调试相关函数
@@ -186,6 +191,136 @@ HRESULT CreateShaderFromFile(
 	ID3DBlob** ppBlobOut);
 
 //
+// 缓冲区相关函数
+//
+
+// ------------------------------
+// CreateVertexBuffer函数
+// ------------------------------
+// [In]d3dDevice			D3D设备
+// [In]data					初始化数据
+// [In]byteWidth			缓冲区字节数
+// [Out]vertexBuffer		输出的顶点缓冲区
+// [InOpt]dynamic			是否需要CPU经常更新
+// [InOpt]streamOutput		是否还用于流输出阶段(不能与dynamic同时设为true)
+HRESULT CreateVertexBuffer(
+	ID3D11Device* d3dDevice,
+	void* data,
+	UINT byteWidth,
+	ID3D11Buffer** vertexBuffer,
+	/* 可选扩展部分 */
+	bool dynamic = false,
+	bool streamOutput = false);
+
+// ------------------------------
+// CreateIndexBuffer函数
+// ------------------------------
+// [In]d3dDevice			D3D设备
+// [In]data					初始化数据
+// [In]byteWidth			缓冲区字节数
+// [Out]indexBuffer			输出的索引缓冲区
+// [InOpt]dynamic			是否需要CPU经常更新
+HRESULT CreateIndexBuffer(
+	ID3D11Device* d3dDevice,
+	void* data,
+	UINT byteWidth,
+	ID3D11Buffer** indexBuffer,
+	/* 可选扩展部分 */
+	bool dynamic = false);
+
+// ------------------------------
+// CreateConstantBuffer函数
+// ------------------------------
+// [In]d3dDevice			D3D设备
+// [In]data					初始化数据
+// [In]byteWidth			缓冲区字节数，必须是16的倍数
+// [Out]indexBuffer			输出的索引缓冲区
+// [InOpt]cpuUpdates		是否允许CPU更新
+// [InOpt]gpuUpdates		是否允许GPU更新
+HRESULT CreateConstantBuffer(
+	ID3D11Device* d3dDevice,
+	void* data,
+	UINT byteWidth,
+	ID3D11Buffer** constantBuffer,
+	/* 可选扩展部分 */
+	bool cpuUpdates = true,
+	bool gpuUpdates = false);
+
+// ------------------------------
+// CreateTypedBuffer函数
+// ------------------------------
+// [In]d3dDevice			D3D设备
+// [In]data					初始化数据
+// [In]byteWidth			缓冲区字节数
+// [Out]typedBuffer			输出的有类型的缓冲区
+// [InOpt]cpuUpdates		是否允许CPU更新
+// [InOpt]gpuUpdates		是否允许使用RWBuffer
+HRESULT CreateTypedBuffer(
+	ID3D11Device* d3dDevice,
+	void* data,
+	UINT byteWidth,
+	ID3D11Buffer** typedBuffer,
+	/* 可选扩展部分 */
+	bool cpuUpdates = false,
+	bool gpuUpdates = false);
+
+// ------------------------------
+// CreateStructuredBuffer函数
+// ------------------------------
+// 如果需要创建Append/Consume Buffer，需指定cpuUpdates为false, gpuUpdates为true
+// [In]d3dDevice			D3D设备
+// [In]data					初始化数据
+// [In]byteWidth			缓冲区字节数
+// [In]structuredByteStride 每个结构体的字节数
+// [Out]structuredBuffer	输出的结构化缓冲区
+// [InOpt]cpuUpdates		是否允许CPU更新
+// [InOpt]gpuUpdates		是否允许使用RWStructuredBuffer
+HRESULT CreateStructuredBuffer(
+	ID3D11Device* d3dDevice,
+	void* data,
+	UINT byteWidth,
+	UINT structuredByteStride,
+	ID3D11Buffer** structuredBuffer,
+	/* 可选扩展部分 */
+	bool cpuUpdates = false,
+	bool gpuUpdates = false);
+
+// ------------------------------
+// CreateRawBuffer函数
+// ------------------------------
+// [In]d3dDevice			D3D设备
+// [In]data					初始化数据
+// [In]byteWidth			缓冲区字节数
+// [Out]rawBuffer			输出的字节地址缓冲区
+// [InOpt]cpuUpdates		是否允许CPU更新
+// [InOpt]gpuUpdates		是否允许使用RWByteAddressBuffer
+HRESULT CreateRawBuffer(
+	ID3D11Device* d3dDevice,
+	void* data,
+	UINT byteWidth,
+	ID3D11Buffer** rawBuffer,
+	/* 可选扩展部分 */
+	bool cpuUpdates = false,
+	bool gpuUpdates = false);
+
+//
+// 纹理数组相关函数
+//
+
+// ------------------------------
+// CreateRandomTexture1D函数
+// ------------------------------
+// 创建1D随机值向量纹理，范围在[-1.0f, 1.0f]
+// [In]d3dDevice            D3D设备
+// [OutOpt]texture		    输出的纹理资源
+// [OutOpt]textureView      输出的纹理资源视图
+HRESULT CreateRandomTexture1D(
+	ID3D11Device* d3dDevice,
+	ID3D11Texture1D** texture,
+	ID3D11ShaderResourceView** textureView);
+
+
+//
 // 纹理数组相关函数
 //
 
@@ -210,6 +345,7 @@ HRESULT CreateTexture2DArrayFromFile(
 //
 // 纹理立方体相关函数
 //
+
 
 // ------------------------------
 // CreateWICTexture2DCubeFromFile函数

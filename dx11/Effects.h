@@ -1,5 +1,5 @@
 //***************************************************************************************
-// Effects.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// Effects.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 简易特效管理框架
@@ -8,6 +8,7 @@
 
 #ifndef EFFECTS_H
 #define EFFECTS_H
+
 #include <memory>
 #include "LightHelper.h"
 #include "RenderStates.h"
@@ -29,7 +30,7 @@ public:
 	IEffect& operator=(IEffect&&) = default;
 
 	// 更新并绑定常量缓冲区
-	virtual void Apply(ID3D11DeviceContext * deviceContext) = 0;
+	virtual void Apply(ID3D11DeviceContext* deviceContext) = 0;
 };
 
 
@@ -48,10 +49,10 @@ public:
 	// 获取单例
 	static BasicEffect& Get();
 
-	
 
-	// 初始化Basic.fx所需资源并初始化渲染状态
-	bool InitAll(ID3D11Device * device);
+
+	// 初始化所需资源
+	bool InitAll(ID3D11Device* device);
 
 
 	// 
@@ -59,10 +60,8 @@ public:
 	//
 
 	// 默认状态来绘制
-	void SetRenderDefault(ID3D11DeviceContext * deviceContext, RenderType type);
-	// 带法线贴图的绘制
-	void SetRenderWithNormalMap(ID3D11DeviceContext * deviceContext, RenderType type);
-	
+	void SetRenderDefault(ID3D11DeviceContext* deviceContext, RenderType type);
+
 	//
 	// 矩阵设置
 	//
@@ -70,7 +69,8 @@ public:
 	void XM_CALLCONV SetWorldMatrix(DirectX::FXMMATRIX W);
 	void XM_CALLCONV SetViewMatrix(DirectX::FXMMATRIX V);
 	void XM_CALLCONV SetProjMatrix(DirectX::FXMMATRIX P);
-	
+	void XM_CALLCONV SetTexTransformMatrix(DirectX::FXMMATRIX T);
+
 	//
 	// 光照、材质和纹理相关设置
 	//
@@ -84,77 +84,33 @@ public:
 
 	void SetMaterial(const Material& material);
 
-
 	void SetTextureUsed(bool isUsed);
 
-	void SetTextureDiffuse(ID3D11ShaderResourceView * textureDiffuse);
-	void SetTextureNormalMap(ID3D11ShaderResourceView * textureNormalMap);
-	void SetTextureCube(ID3D11ShaderResourceView * textureCube);
+	void SetTextureDiffuse(ID3D11ShaderResourceView* textureDiffuse);
+	void SetTextureDisplacement(ID3D11ShaderResourceView* textureDisplacement);
+
+	void SetWavesStates(bool enabled, float texelSizeU = 0.0f, float texelSizeV = 0.0f, float gridSpatialStep = 0.0f);
+
 
 	void SetEyePos(const DirectX::XMFLOAT3& eyePos);
-	
-	//
-	// 状态开关设置，反射与折射不会共存
-	//
 
-	void SetReflectionEnabled(bool isEnable);
-	void SetRefractionEnabled(bool isEnable);
-	void SetRefractionEta(float eta);	// 空气/介质折射比
-	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext * deviceContext) override;
-	
-private:
-	class Impl;
-	std::unique_ptr<Impl> pImpl;
-};
-
-class SkyEffect : public IEffect
-{
-	public:
-	SkyEffect();
-	virtual ~SkyEffect() override;
-	SkyEffect(SkyEffect&& moveFrom) noexcept;
-	SkyEffect& operator=(SkyEffect&& moveFrom) noexcept;
-
-	// 获取单例
-	static SkyEffect& Get();
-
-	// 初始化所需资源
-	bool InitAll(ID3D11Device * device);
-
-	// 
-	// 渲染模式的变更
-	//
-
-	// 默认状态来绘制
-	void SetRenderDefault(ID3D11DeviceContext * deviceContext);
 
 	//
-	// 矩阵设置
+	// 状态设置
 	//
 
-	void XM_CALLCONV SetWorldViewProjMatrix(DirectX::FXMMATRIX W, DirectX::CXMMATRIX V, DirectX::CXMMATRIX P);
-	void XM_CALLCONV SetWorldViewProjMatrix(DirectX::FXMMATRIX WVP);
-
-	//
-	// 纹理立方体映射设置
-	//
-
-	void SetTextureCube(ID3D11ShaderResourceView * textureCube);
-
+	void SetFogState(bool isOn);
+	void SetFogStart(float fogStart);
+	void SetFogColor(DirectX::XMVECTOR fogColor);
+	void SetFogRange(float fogRange);
 
 	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext * deviceContext) override;
+	void Apply(ID3D11DeviceContext* deviceContext) override;
 
 private:
 	class Impl;
 	std::unique_ptr<Impl> pImpl;
 };
-
-
-
-
-
 
 
 #endif

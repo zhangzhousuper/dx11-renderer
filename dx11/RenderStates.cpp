@@ -1,28 +1,30 @@
 #include "RenderStates.h"
 #include "d3dUtil.h"
 #include "DXTrace.h"
+
 using namespace Microsoft::WRL;
 
-ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull			= nullptr;
-ComPtr<ID3D11RasterizerState> RenderStates::RSWireframe			= nullptr;
-ComPtr<ID3D11RasterizerState> RenderStates::RSCullClockWise		= nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull = nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSWireframe = nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSCullClockWise = nullptr;
 
-ComPtr<ID3D11SamplerState> RenderStates::SSAnistropicWrap		= nullptr;
-ComPtr<ID3D11SamplerState> RenderStates::SSLinearWrap			= nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSPointClamp = nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSAnisotropicWrap = nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSLinearWrap = nullptr;
 
-ComPtr<ID3D11BlendState> RenderStates::BSAlphaToCoverage		= nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSNoColorWrite			= nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSTransparent			= nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSAdditive				= nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSAlphaToCoverage = nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSNoColorWrite = nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSTransparent = nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSAdditive = nullptr;
 
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSLessEqual		= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSWriteStencil	= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSDrawWithStencil= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDoubleBlend	= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTest	= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWrite	= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTestWithStencil		= nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWriteWithStencil	= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSLessEqual = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSWriteStencil = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSDrawWithStencil = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDoubleBlend = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTest = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWrite = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTestWithStencil = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWriteWithStencil = nullptr;
 
 bool RenderStates::IsInit()
 {
@@ -30,7 +32,7 @@ bool RenderStates::IsInit()
 	return RSWireframe != nullptr;
 }
 
-void RenderStates::InitAll(ID3D11Device * device)
+void RenderStates::InitAll(ID3D11Device* device)
 {
 	// 先前初始化过的话就没必要重来了
 	if (IsInit())
@@ -47,7 +49,7 @@ void RenderStates::InitAll(ID3D11Device * device)
 	rasterizerDesc.FrontCounterClockwise = false;
 	rasterizerDesc.DepthClipEnable = true;
 	HR(device->CreateRasterizerState(&rasterizerDesc, RSWireframe.GetAddressOf()));
-	 
+
 	// 无背面剔除模式
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
@@ -68,7 +70,17 @@ void RenderStates::InitAll(ID3D11Device * device)
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
 
-	// 线性过滤模式
+	// 点过滤与Clamp模式
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	HR(device->CreateSamplerState(&sampDesc, SSPointClamp.GetAddressOf()));
+
+	// 线性过滤与Wrap模式
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -78,7 +90,7 @@ void RenderStates::InitAll(ID3D11Device * device)
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	HR(device->CreateSamplerState(&sampDesc, SSLinearWrap.GetAddressOf()));
 
-	// 各向异性过滤模式
+	// 各向异性过滤与Wrap模式
 	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -87,8 +99,8 @@ void RenderStates::InitAll(ID3D11Device * device)
 	sampDesc.MaxAnisotropy = 4;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	HR(device->CreateSamplerState(&sampDesc, SSAnistropicWrap.GetAddressOf()));
-	
+	HR(device->CreateSamplerState(&sampDesc, SSAnisotropicWrap.GetAddressOf()));
+
 	// ******************
 	// 初始化混合状态
 	//
@@ -116,7 +128,7 @@ void RenderStates::InitAll(ID3D11Device * device)
 	rtDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 	HR(device->CreateBlendState(&blendDesc, BSTransparent.GetAddressOf()));
-	
+
 	// 加法混合模式
 	// Color = SrcColor + DestColor
 	// Alpha = SrcAlpha
@@ -141,7 +153,7 @@ void RenderStates::InitAll(ID3D11Device * device)
 	rtDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	rtDesc.RenderTargetWriteMask = 0;
 	HR(device->CreateBlendState(&blendDesc, BSNoColorWrite.GetAddressOf()));
-	
+
 	// ******************
 	// 初始化深度/模板状态
 	//
@@ -152,7 +164,9 @@ void RenderStates::InitAll(ID3D11Device * device)
 	dsDesc.DepthEnable = true;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
 	dsDesc.StencilEnable = false;
+
 	HR(device->CreateDepthStencilState(&dsDesc, DSSLessEqual.GetAddressOf()));
 
 	// 写入模板值的深度/模板状态
@@ -293,7 +307,7 @@ void RenderStates::InitAll(ID3D11Device * device)
 	D3D11SetDebugObjectName(RSNoCull.Get(), "RSNoCull");
 	D3D11SetDebugObjectName(RSWireframe.Get(), "RSWireframe");
 
-	D3D11SetDebugObjectName(SSAnistropicWrap.Get(), "SSAnistropicWrap");
+	D3D11SetDebugObjectName(SSAnisotropicWrap.Get(), "SSAnisotropicWrap");
 	D3D11SetDebugObjectName(SSLinearWrap.Get(), "SSLinearWrap");
 
 	D3D11SetDebugObjectName(BSAlphaToCoverage.Get(), "BSAlphaToCoverage");

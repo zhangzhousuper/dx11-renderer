@@ -1,5 +1,5 @@
 //***************************************************************************************
-// RenderStates.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// RenderStates.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 提供一些渲染状态
@@ -21,7 +21,7 @@ public:
 
 	static bool IsInit();
 
-	static void InitAll(ID3D11Device * device);
+	static void InitAll(ID3D11Device* device);
 	// 使用ComPtr无需手工释放
 
 public:
@@ -29,8 +29,9 @@ public:
 	static ComPtr<ID3D11RasterizerState> RSNoCull;			            // 光栅化器状态：无背面裁剪模式
 	static ComPtr<ID3D11RasterizerState> RSCullClockWise;	            // 光栅化器状态：顺时针裁剪模式
 
-	static ComPtr<ID3D11SamplerState> SSLinearWrap;			            // 采样器状态：线性过滤
-	static ComPtr<ID3D11SamplerState> SSAnistropicWrap;		            // 采样器状态：各项异性过滤
+	static ComPtr<ID3D11SamplerState> SSPointClamp;						// 采样器状态：点过滤与Clamp模式
+	static ComPtr<ID3D11SamplerState> SSLinearWrap;			            // 采样器状态：线性过滤与Wrap模式
+	static ComPtr<ID3D11SamplerState> SSAnisotropicWrap;		            // 采样器状态：各向异性过滤与Wrap模式
 
 	static ComPtr<ID3D11BlendState> BSNoColorWrite;		                // 混合状态：不写入颜色
 	static ComPtr<ID3D11BlendState> BSTransparent;		                // 混合状态：透明混合
