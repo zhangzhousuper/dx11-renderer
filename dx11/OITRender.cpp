@@ -140,11 +140,12 @@ void OITRender::BeginDefaultStore(ID3D11DeviceContext* deviceContext)
 	// 初始化UAV
 	UINT magicValue[1] = { 0xFFFFFFFF };
 	deviceContext->ClearUnorderedAccessViewUint(m_pFLBufferUAV.Get(), magicValue);
-	deviceContext->ClearUnorderedAccessViewUint(m_pFLBufferUAV.Get(), magicValue);
+	deviceContext->ClearUnorderedAccessViewUint(m_pStartOffsetBufferUAV.Get(), magicValue);
 	// UAV绑定到像素着色阶段
 	ID3D11UnorderedAccessView* pUAVs[2] = { m_pFLBufferUAV.Get(), m_pStartOffsetBufferUAV.Get() };
 	UINT initCounts[2] = { 0, 0 };
-	deviceContext->OMSetRenderTargetsAndUnorderedAccessViews(D3D11_KEEP_RENDER_TARGETS_AND_DEPTH_STENCIL, nullptr, nullptr, 1, 2, pUAVs, initCounts);
+	deviceContext->OMSetRenderTargetsAndUnorderedAccessViews(D3D11_KEEP_RENDER_TARGETS_AND_DEPTH_STENCIL,
+		nullptr, nullptr, 1, 2, pUAVs, initCounts);
 
 	// 关闭深度写入
 	deviceContext->OMSetDepthStencilState(RenderStates::DSSNoDepthWrite.Get(), 0);
@@ -159,19 +160,22 @@ void OITRender::EndStore(ID3D11DeviceContext* deviceContext)
 	ComPtr<ID3D11RenderTargetView> currRTV;
 	ComPtr<ID3D11DepthStencilView> currDSV;
 	ID3D11UnorderedAccessView* pUAVs[2] = { nullptr, nullptr };
-	deviceContext->OMSetRenderTargetsAndUnorderedAccessViews(D3D11_KEEP_RENDER_TARGETS_AND_DEPTH_STENCIL, nullptr, nullptr, 1, 2, pUAVs, nullptr);
+	deviceContext->OMSetRenderTargetsAndUnorderedAccessViews(D3D11_KEEP_RENDER_TARGETS_AND_DEPTH_STENCIL,
+		nullptr, nullptr, 1, 2, pUAVs, nullptr);
 	m_pCachePS.Reset();
 }
 
 void OITRender::Draw(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* background)
 {
+
 	UINT strides[1] = { sizeof(VertexPos) };
 	UINT offsets[1] = { 0 };
 	deviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), strides, offsets);
 	deviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
 	deviceContext->IASetInputLayout(m_pInputLayout.Get());
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
+
 	deviceContext->VSSetShader(m_pOITRenderVS.Get(), nullptr, 0);
 	deviceContext->PSSetShader(m_pOITRenderPS.Get(), nullptr, 0);
 
@@ -191,6 +195,7 @@ void OITRender::Draw(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceVie
 	// 绘制完成后卸下绑定的资源即可
 	pSRVs[0] = pSRVs[1] = pSRVs[2] = nullptr;
 	deviceContext->PSSetShaderResources(0, 3, pSRVs);
+
 }
 
 void OITRender::SetDebugObjectName(const std::string& name)
