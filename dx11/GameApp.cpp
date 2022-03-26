@@ -6,10 +6,9 @@ using namespace DirectX;
 
 GameApp::GameApp(HINSTANCE hInstance)
 	: D3DApp(hInstance), m_BaseTime(),
-	m_EnabledFog(true), m_EnabledGpuWaves(true)
+	m_EnabledFog(true), m_EnabledOIT(true), m_EnabledNoDepthWrite(true)
 {
 }
-
 GameApp::~GameApp()
 {
 }
@@ -84,6 +83,17 @@ void GameApp::OnResize()
 		m_pCamera->SetViewPort(0.0f, 0.0f, (float)m_ClientWidth, (float)m_ClientHeight);
 		m_BasicEffect.SetProjMatrix(m_pCamera->GetProjXM());
 	}
+		// 重新调整TextureRender和OITRender缓冲区的大小
+	if (m_pTextureRender)
+	{
+		m_pTextureRender = std::make_unique<TextureRender>();
+		HR(m_pTextureRender->InitResource(m_pd3dDevice.Get(), m_ClientWidth, m_ClientHeight));
+	}
+	if (m_pOITRender)
+	{
+		m_pOITRender = std::make_unique<OITRender>();
+		HR(m_pOITRender->InitResource(m_pd3dDevice.Get(), m_ClientWidth, m_ClientHeight, 4));
+	}
 }
 
 void GameApp::UpdateScene(float dt)
@@ -120,46 +130,28 @@ void GameApp::UpdateScene(float dt)
 	// CPU/GPU模式切换
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1))
 	{
-		m_EnabledGpuWaves = !m_EnabledGpuWaves;
-		if (m_EnabledGpuWaves)
-		{
-			HR(m_pGpuWavesRender->InitResource(m_pd3dDevice.Get(),
-				L"Texture\\water2.dds", 256, 256, 5.0f, 5.0f, 0.03f, 0.625f, 2.0f, 0.2f, 0.05f, 0.1f));
-		}
-		else
-		{
-			HR(m_pCpuWavesRender->InitResource(m_pd3dDevice.Get(),
-				L"Texture\\water2.dds", 256, 256, 5.0f, 5.0f, 0.03f, 0.625f, 2.0f, 0.2f, 0.05f, 0.1f));
-		}
+		m_EnabledOIT = !m_EnabledOIT;
 	}
 	// 雾效开关
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2))
 	{
 		m_EnabledFog = !m_EnabledFog;
 		m_BasicEffect.SetFogState(m_EnabledFog);
-
+	}
+	// 深度写入开关
+	if (!m_EnabledOIT && m_KeyboardTracker.IsKeyPressed(Keyboard::D3))
+	{
+		m_EnabledNoDepthWrite = !m_EnabledNoDepthWrite;
 	}
 	// 每1/4s生成一个随机水波
 	if (m_Timer.TotalTime() - m_BaseTime >= 0.25f)
 	{
 		m_BaseTime += 0.25f;
-		if (m_EnabledGpuWaves)
-		{
-			m_pGpuWavesRender->Disturb(m_pd3dImmediateContext.Get(), m_RowRange(m_RandEngine), m_ColRange(m_RandEngine),
-				m_MagnitudeRange(m_RandEngine));
-		}
-		else
-		{
-			m_pCpuWavesRender->Disturb(m_RowRange(m_RandEngine), m_ColRange(m_RandEngine),
-				m_MagnitudeRange(m_RandEngine));
-		}
-			
+		m_pGpuWavesRender->Disturb(m_pd3dImmediateContext.Get(), m_RowRange(m_RandEngine), m_ColRange(m_RandEngine),
+			m_MagnitudeRange(m_RandEngine));
 	}
 	// 更新波浪
-	if (m_EnabledGpuWaves)
-		m_pGpuWavesRender->Update(m_pd3dImmediateContext.Get(), dt);
-	else
-		m_pCpuWavesRender->Update(dt);
+	m_pGpuWavesRender->Update(m_pd3dImmediateContext.Get(), dt);
 
 	// 退出程序，这里应向窗口发送销毁信息
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::Escape))
@@ -174,6 +166,11 @@ void GameApp::DrawScene()
 	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), reinterpret_cast<const float*>(&Colors::Silver));
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	
+	// 渲染到临时背景
+	if (m_EnabledOIT)
+	{
+		m_pTextureRender->Begin(m_pd3dImmediateContext.Get(), reinterpret_cast<const float*>(&Colors::Silver));
+	}
 	// ******************
 	// 1. 绘制不透明对象
 	//
@@ -181,18 +178,35 @@ void GameApp::DrawScene()
 	m_BasicEffect.SetTexTransformMatrix(XMMatrixIdentity());
 	m_Land.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
 	// ******************
-	// 2. 绘制透明对象
+	// 2. 存放透明物体的像素片元
 	//
-	m_pd3dImmediateContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
-	m_pd3dImmediateContext->RSSetState(RenderStates::RSNoCull.Get());
-	m_WireFence.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-
-	m_pd3dImmediateContext->RSSetState(nullptr);
-	if (m_EnabledGpuWaves)
-		m_pGpuWavesRender->Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	if (m_EnabledOIT)
+	{
+		m_pOITRender->BeginDefaultStore(m_pd3dImmediateContext.Get());
+	}
 	else
-		m_pCpuWavesRender->Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
-
+	{
+		m_pd3dImmediateContext->OMSetBlendState(RenderStates::BSTransparent.Get(), nullptr, 0xFFFFFFFF);
+		m_pd3dImmediateContext->RSSetState(RenderStates::RSNoCull.Get());
+		if (m_EnabledNoDepthWrite)
+		{
+			m_pd3dImmediateContext->OMSetDepthStencilState(RenderStates::DSSNoDepthWrite.Get(), 0);
+		}
+		else 
+		{
+			m_pd3dImmediateContext->OMSetDepthStencilState(nullptr, 0);
+		}
+	}
+	m_RedBox.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_YellowBox.Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	m_pGpuWavesRender->Draw(m_pd3dImmediateContext.Get(), m_BasicEffect);
+	if (m_EnabledOIT)
+	{
+		m_pOITRender->EndStore(m_pd3dImmediateContext.Get());
+		m_pTextureRender->End(m_pd3dImmediateContext.Get());
+		// 渲染到后备缓冲区
+		m_pOITRender->Draw(m_pd3dImmediateContext.Get(), m_pTextureRender->GetOutputTexture());
+	}
 	// ******************
 	// 绘制Direct2D部分
 	//
@@ -201,11 +215,17 @@ void GameApp::DrawScene()
 		m_pd2dRenderTarget->BeginDraw();
 		std::wstring text = L"当前摄像机模式: 第三人称  Esc退出\n"
 			L"鼠标移动控制视野 滚轮控制第三人称观察距离\n"
-			L"当前水波绘制模式: ";
-		text += m_EnabledGpuWaves ? L"GPU通用计算模式  " : L"CPU动态更新模式  ";
+			L"顺序无关透明度: ";
+		text += m_EnabledOIT ? L"开  " : L"关  ";
 		text += L"(1-切换)\n雾效: ";
 		text += m_EnabledFog ? L"开  " : L"关  ";
 		text += L"(2-切换)";
+		if (!m_EnabledOIT)
+		{
+			text += L"\n禁止深度写入: ";
+			text += m_EnabledNoDepthWrite ? L"开  " : L"关  ";
+			text += L"(3-切换)";
+		}
 		m_pd2dRenderTarget->DrawTextW(text.c_str(), (UINT32)text.length(), m_pTextFormat.Get(),
 			D2D1_RECT_F{ 0.0f, 0.0f, 600.0f, 200.0f }, m_pColorBrush.Get());
 		HR(m_pd2dRenderTarget->EndDraw());
@@ -223,9 +243,11 @@ bool GameApp::InitResource()
 	// 初始化游戏对象
 	//
 	ComPtr<ID3D11ShaderResourceView> landDiffuse;
-	ComPtr<ID3D11ShaderResourceView> wireFenceDiffuse;
+	ComPtr<ID3D11ShaderResourceView> redBoxDiffuse;
+	ComPtr<ID3D11ShaderResourceView> yellowBoxDiffuse;
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\grass.dds", nullptr, landDiffuse.GetAddressOf()));
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\WireFence.dds", nullptr, wireFenceDiffuse.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Red.dds", nullptr, redBoxDiffuse.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Yellow.dds", nullptr, yellowBoxDiffuse.GetAddressOf()));
 	Model model;
 	// 地面
 	model.SetMesh(m_pd3dDevice.Get(), Geometry::CreateTerrain(XMFLOAT2(160.0f, 160.0f),
@@ -242,37 +264,47 @@ bool GameApp::InitResource()
 	model.modelParts[0].texDiffuse = landDiffuse;
 	m_Land.SetModel(std::move(model));
 	m_Land.GetTransform().SetPosition(0.0f, -1.0f, 0.0f);
-	// 篱笆盒
+	// 透明红盒与黄盒
+	model.SetMesh(m_pd3dDevice.Get(), Geometry::CreateBox(8.0f, 8.0f, 8.0f));
+	material.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	material.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
+	material.specular = XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f);
+	model.modelParts[0].material = material;
+	model.modelParts[0].texDiffuse = redBoxDiffuse;
+	m_RedBox.SetModel(std::move(model));
+	m_RedBox.GetTransform().SetPosition(-6.0f, 2.0f, -4.0f);
 	model.SetMesh(m_pd3dDevice.Get(), Geometry::CreateBox(8.0f, 8.0f, 8.0f));
 	model.modelParts[0].material = material;
-	model.modelParts[0].texDiffuse = wireFenceDiffuse;
-	m_WireFence.SetModel(std::move(model));
-	m_WireFence.GetTransform().SetPosition(-2.0f, 2.0f, -4.0f);
-	
+	model.modelParts[0].texDiffuse = yellowBoxDiffuse;
+	m_YellowBox.SetModel(std::move(model));
+	m_YellowBox.GetTransform().SetPosition(-2.0f, 1.8f, 0.0f);	
 	// ******************
 	// 初始化水面波浪
 	//
 
 	// 世界矩阵为默认的单位矩阵，故不设置
-	m_pCpuWavesRender = std::make_unique<CpuWavesRender>();
-	HR(m_pCpuWavesRender->InitResource(m_pd3dDevice.Get(),
+	m_pGpuWavesRender = std::make_unique<GpuWavesRender>();
+	HR(m_pGpuWavesRender->InitResource(m_pd3dDevice.Get(),
 		L"Texture\\water2.dds", 256, 256, 5.0f, 5.0f, 0.03f, 0.625f, 2.0f, 0.2f, 0.05f, 0.1f));
 	material.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	material.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
 	material.specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 32.0f);
-	m_pCpuWavesRender->SetMaterial(material);
-
-	m_pGpuWavesRender = std::make_unique<GpuWavesRender>();
-	HR(m_pGpuWavesRender->InitResource(m_pd3dDevice.Get(),
-		L"Texture\\water2.dds", 256, 256, 5.0f, 5.0f, 0.03f, 0.625f, 2.0f, 0.2f, 0.05f, 0.1f));
 	m_pGpuWavesRender->SetMaterial(material);
+
+	// ******************
+	// 初始化OIT渲染器和RTT渲染器
+	//
+	m_pTextureRender = std::make_unique<TextureRender>();
+	HR(m_pTextureRender->InitResource(m_pd3dDevice.Get(), m_ClientWidth, m_ClientHeight));
+	m_pOITRender = std::make_unique<OITRender>();
+	HR(m_pOITRender->InitResource(m_pd3dDevice.Get(), m_ClientWidth, m_ClientHeight, 4));
 
 	// ******************
 	// 初始化随机数生成器
 	//
 	m_RandEngine.seed(std::random_device()());
-	m_RowRange = std::uniform_int_distribution<UINT>(5, m_pCpuWavesRender->RowCount() - 5);
-	m_ColRange = std::uniform_int_distribution<UINT>(5, m_pCpuWavesRender->ColumnCount() - 5);
+	m_RowRange = std::uniform_int_distribution<UINT>(5, m_pGpuWavesRender->RowCount() - 5);
+	m_ColRange = std::uniform_int_distribution<UINT>(5, m_pGpuWavesRender->ColumnCount() - 5);
 	m_MagnitudeRange = std::uniform_real_distribution<float>(0.5f, 1.0f);
 	// ******************
 	// 初始化摄像机
@@ -328,9 +360,11 @@ bool GameApp::InitResource()
 	// 设置调试对象名
 	//
 	m_Land.SetDebugObjectName("Land");
-	m_WireFence.SetDebugObjectName("WireFence");
-	m_pCpuWavesRender->SetDebugObjectName("CpuWaveRender");
+	m_RedBox.SetDebugObjectName("RedBox");
+	m_YellowBox.SetDebugObjectName("YellowBox");
 	m_pGpuWavesRender->SetDebugObjectName("GpuWaveRender");
+	m_pTextureRender->SetDebugObjectName("TextureRender");
+	m_pOITRender->SetDebugObjectName("OITRender");
 	return true;
 }
 

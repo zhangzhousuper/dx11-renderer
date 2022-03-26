@@ -87,6 +87,12 @@
     <ClInclude Include="WavesRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="OITRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
@@ -152,6 +158,12 @@
     <ClCompile Include="WavesRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="OITRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\LightHelper.hlsli" />
@@ -172,6 +184,9 @@
     <FxCompile Include="HLSL\WavesDisturb_CS.hlsl" />
     <FxCompile Include="HLSL\WavesUpdate_CS.hlsl" />
     <FxCompile Include="HLSL\Basic_PS.hlsl" />
+    <FxCompile Include="HLSL\OIT_Store_PS.hlsl" />
+    <FxCompile Include="HLSL\OIT_Render_VS.hlsl" />
+    <FxCompile Include="HLSL\OIT_Render_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />

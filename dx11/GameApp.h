@@ -7,6 +7,8 @@
 #include "GameObject.h"
 #include "ObjReader.h"
 #include "Collision.h"
+#include "OITRender.h"
+#include "TextureRender.h"
 #include "WavesRender.h"
 class GameApp : public D3DApp
 {
@@ -27,7 +29,7 @@ private:
 	bool InitResource();
 
 private:
-
+	
 	ComPtr<ID2D1SolidColorBrush> m_pColorBrush;				    // 单色笔刷
 	ComPtr<IDWriteFont> m_pFont;								// 字体
 	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
@@ -40,15 +42,18 @@ private:
 	BasicEffect m_BasicEffect;									// 对象渲染特效管理
 
 	GameObject m_Land;											// 地面对象
-	GameObject m_WireFence;										// 篱笆盒
+	GameObject m_RedBox;										// 红色箱子
+	GameObject m_YellowBox;										// 黄色箱子
 
-	std::unique_ptr<CpuWavesRender> m_pCpuWavesRender;			// CPU波浪渲染器
 	std::unique_ptr<GpuWavesRender> m_pGpuWavesRender;			// GPU波浪渲染器
+	std::unique_ptr<TextureRender> m_pTextureRender;			// RTT渲染器
+	std::unique_ptr<OITRender> m_pOITRender;					// OIT渲染器
 
 	float m_BaseTime;											// 控制水波生成的基准时间
 
 	bool m_EnabledFog;											// 开启雾效
-	bool m_EnabledGpuWaves;										// 开启GPU波浪绘制
+	bool m_EnabledOIT;											// 开启OIT
+	bool m_EnabledNoDepthWrite;									// 开启仅深度测试
 
 	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
 };
