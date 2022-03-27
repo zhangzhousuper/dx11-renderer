@@ -1,5 +1,5 @@
 //***************************************************************************************
-// Effects.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// Effects.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 简易特效管理框架
@@ -8,6 +8,7 @@
 
 #ifndef EFFECTS_H
 #define EFFECTS_H
+
 #include <memory>
 #include "LightHelper.h"
 #include "RenderStates.h"
@@ -61,7 +62,7 @@ public:
 	static BasicEffect& Get();
 
 	// 初始化所需资源
-	bool InitAll(ID3D11Device* device);
+	bool InitAll(ID3D11Device * device);
 
 	//
 	// IEffectTransform
@@ -70,13 +71,13 @@ public:
 	void XM_CALLCONV SetWorldMatrix(DirectX::FXMMATRIX W) override;
 	void XM_CALLCONV SetViewMatrix(DirectX::FXMMATRIX V) override;
 	void XM_CALLCONV SetProjMatrix(DirectX::FXMMATRIX P) override;
-
+	
 	//
 	// IEffectTextureDiffuse
 	//
 
 	void SetTextureDiffuse(ID3D11ShaderResourceView* textureDiffuse) override;
-
+	
 
 	//
 	// BasicEffect
@@ -110,8 +111,8 @@ public:
 	//
 
 	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext* deviceContext) override;
-
+	void Apply(ID3D11DeviceContext * deviceContext) override;
+	
 private:
 	class Impl;
 	std::unique_ptr<Impl> pImpl;
@@ -132,7 +133,7 @@ public:
 	// 初始化所需资源
 	bool InitAll(ID3D11Device* device);
 
-
+	
 	//
 	// IEffectTransform
 	//
@@ -156,7 +157,7 @@ public:
 	//
 
 	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext* deviceContext) override;
+	void Apply(ID3D11DeviceContext * deviceContext) override;
 
 private:
 	class Impl;
@@ -189,7 +190,7 @@ public:
 	//
 	// IEffectTextureDiffuse
 	//
-
+	
 	// 设置漫反射纹理
 	void SetTextureDiffuse(ID3D11ShaderResourceView* textureDiffuse) override;
 
@@ -210,7 +211,7 @@ public:
 	//
 
 	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext* deviceContext) override;
+	void Apply(ID3D11DeviceContext * deviceContext) override;
 
 private:
 	class Impl;
@@ -264,16 +265,11 @@ public:
 	//
 
 	// 应用常量缓冲区和纹理资源的变更
-	void Apply(ID3D11DeviceContext* deviceContext) override;
+	void Apply(ID3D11DeviceContext * deviceContext) override;
 
 private:
 	class Impl;
 	std::unique_ptr<Impl> pImpl;
 };
-
-
-
-
-
 
 #endif

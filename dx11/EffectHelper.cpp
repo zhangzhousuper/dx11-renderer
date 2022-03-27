@@ -9,7 +9,7 @@ using namespace Microsoft::WRL;
 # pragma warning(disable: 26812)
 
 //
-// ´úÂëºê
+// ä»£ç å®
 //
 
 #define EFFECTHELPER_CREATE_SHADER(FullShaderType, ShaderType)\
@@ -100,7 +100,7 @@ using namespace Microsoft::WRL;
 }
 
 //
-// Ã¶¾ÙÓëÀàÉùÃ÷
+// æšä¸¾ä¸ç±»å£°æ˜
 //
 
 
@@ -113,7 +113,7 @@ enum ShaderFlag {
 	ComputeShader = 0x20,
 };
 
-// ×ÅÉ«Æ÷×ÊÔ´
+// ç€è‰²å™¨èµ„æº
 struct ShaderResource
 {
 	std::string name;
@@ -121,7 +121,7 @@ struct ShaderResource
 	ComPtr<ID3D11ShaderResourceView> pSRV;
 };
 
-// ¿É¶ÁĞ´×ÊÔ´
+// å¯è¯»å†™èµ„æº
 struct RWResource
 {
 	std::string name;
@@ -131,14 +131,14 @@ struct RWResource
 	bool enableCounter;
 };
 
-// ²ÉÑùÆ÷×´Ì¬
+// é‡‡æ ·å™¨çŠ¶æ€
 struct SamplerState
 {
 	std::string name;
 	ComPtr<ID3D11SamplerState> pSS;
 };
 
-// ÄÚ²¿Ê¹ÓÃµÄ³£Á¿»º³åÇøÊı¾İ
+// å†…éƒ¨ä½¿ç”¨çš„å¸¸é‡ç¼“å†²åŒºæ•°æ®
 struct CBufferData : CBufferBase
 {
 	std::unique_ptr<BYTE[]> pData;
@@ -288,7 +288,7 @@ struct ConstantBufferVariable : public IEffectConstantBufferVariable
 		if (byteOffset + byteCount > byteWidth)
 			byteCount = byteWidth - byteOffset;
 
-		// ½öµ±Öµ²»Í¬Ê±¸üĞÂ
+		// ä»…å½“å€¼ä¸åŒæ—¶æ›´æ–°
 		if (memcmp(pCBufferData->pData.get() + startByteOffset + byteOffset, data, byteCount))
 		{
 			memcpy_s(pCBufferData->pData.get() + startByteOffset + byteOffset, byteCount, data, byteCount);
@@ -308,7 +308,7 @@ struct ConstantBufferVariable : public IEffectConstantBufferVariable
 
 	void SetMatrixInBytes(UINT rows, UINT cols, const BYTE* noPadData)
 	{
-		// ½öÔÊĞí1x1µ½4x4
+		// ä»…å…è®¸1x1åˆ°4x4
 		if (rows == 0 || rows > 4 || cols == 0 || cols > 4)
 			return;
 		UINT remainBytes = byteWidth < 64 ? byteWidth : 64;
@@ -316,7 +316,7 @@ struct ConstantBufferVariable : public IEffectConstantBufferVariable
 		while (remainBytes > 0 && rows > 0)
 		{
 			UINT rowPitch = sizeof(DWORD) * cols < remainBytes ? sizeof(DWORD) * cols : remainBytes;
-			// ½öµ±Öµ²»Í¬Ê±¸üĞÂ
+			// ä»…å½“å€¼ä¸åŒæ—¶æ›´æ–°
 			if (memcmp(pData, noPadData, rowPitch))
 			{
 				memcpy_s(pData, rowPitch, noPadData, rowPitch);
@@ -420,9 +420,9 @@ struct EffectPass : public IEffectPass
 	std::shared_ptr<IEffectConstantBufferVariable> GSGetParamByName(LPCSTR paramName) override;
 	std::shared_ptr<IEffectConstantBufferVariable> PSGetParamByName(LPCSTR paramName) override;
 	std::shared_ptr<IEffectConstantBufferVariable> CSGetParamByName(LPCSTR paramName) override;
-	void Apply(ID3D11DeviceContext* deviceContext) override;
+	void Apply(ID3D11DeviceContext * deviceContext) override;
 
-	// äÖÈ¾×´Ì¬
+	// æ¸²æŸ“çŠ¶æ€
 	ComPtr<ID3D11BlendState> pBlendState = nullptr;
 	FLOAT blendFactor[4] = {};
 	UINT sampleMask = 0xFFFFFFFF;
@@ -431,9 +431,9 @@ struct EffectPass : public IEffectPass
 
 	ComPtr<ID3D11DepthStencilState> pDepthStencilState = nullptr;
 	UINT stencilRef = 0;
+	
 
-
-	// ×ÅÉ«Æ÷Ïà¹ØĞÅÏ¢
+	// ç€è‰²å™¨ç›¸å…³ä¿¡æ¯
 	std::shared_ptr<VertexShaderInfo> pVSInfo = nullptr;
 	std::shared_ptr<HullShaderInfo> pHSInfo = nullptr;
 	std::shared_ptr<DomainShaderInfo> pDSInfo = nullptr;
@@ -441,7 +441,7 @@ struct EffectPass : public IEffectPass
 	std::shared_ptr<PixelShaderInfo> pPSInfo = nullptr;
 	std::shared_ptr<ComputeShaderInfo> pCSInfo = nullptr;
 
-	// ×ÅÉ«Æ÷ĞÎ²Î³£Á¿»º³åÇøÊı¾İ(²»´´½¨³£Á¿»º³åÇø)
+	// ç€è‰²å™¨å½¢å‚å¸¸é‡ç¼“å†²åŒºæ•°æ®(ä¸åˆ›å»ºå¸¸é‡ç¼“å†²åŒº)
 	std::unique_ptr<CBufferData> pVSParamData = nullptr;
 	std::unique_ptr<CBufferData> pHSParamData = nullptr;
 	std::unique_ptr<CBufferData> pDSParamData = nullptr;
@@ -449,7 +449,7 @@ struct EffectPass : public IEffectPass
 	std::unique_ptr<CBufferData> pPSParamData = nullptr;
 	std::unique_ptr<CBufferData> pCSParamData = nullptr;
 
-	// ×ÊÔ´ºÍ²ÉÑùÆ÷×´Ì¬
+	// èµ„æºå’Œé‡‡æ ·å™¨çŠ¶æ€
 	std::unordered_map<UINT, CBufferData>& cBuffers;
 	std::unordered_map<UINT, ShaderResource>& shaderResources;
 	std::unordered_map<UINT, SamplerState>& samplers;
@@ -462,33 +462,33 @@ public:
 	Impl() { Clear(); }
 	~Impl() = default;
 
-	// ¸üĞÂÊÕ¼¯×ÅÉ«Æ÷·´ÉäĞÅÏ¢
+	// æ›´æ–°æ”¶é›†ç€è‰²å™¨åå°„ä¿¡æ¯
 	HRESULT UpdateShaderReflection(LPCSTR name, ID3D11Device* device, ID3D11ShaderReflection* pShaderReflection, UINT shaderFlag);
-	// Çå¿ÕËùÓĞ×ÊÔ´Óë·´ÉäĞÅÏ¢
+	// æ¸…ç©ºæ‰€æœ‰èµ„æºä¸åå°„ä¿¡æ¯
 	void Clear();
-	//¸ù¾İBlob´´½¨×ÅÉ«Æ÷²¢Ö¸¶¨±êÊ¶Ãû
+	//æ ¹æ®Blobåˆ›å»ºç€è‰²å™¨å¹¶æŒ‡å®šæ ‡è¯†å
 	HRESULT CreateShaderFromBlob(LPCSTR name, ID3D11Device* device, UINT shaderFlag,
 		ID3DBlob* blob);
 
 public:
-	std::unordered_map<std::string, std::shared_ptr<EffectPass>> m_EffectPasses;				// äÖÈ¾Í¨µÀ
+	std::unordered_map<std::string, std::shared_ptr<EffectPass>> m_EffectPasses;				// æ¸²æŸ“é€šé“
 
-	std::unordered_map<std::string,																// ³£Á¿»º³åÇøµÄ±äÁ¿
+	std::unordered_map<std::string,																// å¸¸é‡ç¼“å†²åŒºçš„å˜é‡
 		std::shared_ptr<ConstantBufferVariable>> m_ConstantBufferVariables;
-	std::unordered_map<UINT, CBufferData> m_CBuffers;											// ³£Á¿»º³åÇøÁÙÊ±»º´æµÄÊı¾İ
-	std::unordered_map<UINT, ShaderResource> m_ShaderResources;									// ×ÅÉ«Æ÷×ÊÔ´
-	std::unordered_map<UINT, SamplerState> m_Samplers;											// ²ÉÑùÆ÷
-	std::unordered_map<UINT, RWResource> m_RWResources;											// ¿É¶ÁĞ´×ÊÔ´
+	std::unordered_map<UINT, CBufferData> m_CBuffers;											// å¸¸é‡ç¼“å†²åŒºä¸´æ—¶ç¼“å­˜çš„æ•°æ®
+	std::unordered_map<UINT, ShaderResource> m_ShaderResources;									// ç€è‰²å™¨èµ„æº
+	std::unordered_map<UINT, SamplerState> m_Samplers;											// é‡‡æ ·å™¨
+	std::unordered_map<UINT, RWResource> m_RWResources;											// å¯è¯»å†™èµ„æº
 
-	std::unordered_map<std::string, std::shared_ptr<VertexShaderInfo>> m_VertexShaders;			// ¶¥µã×ÅÉ«Æ÷
-	std::unordered_map<std::string, std::shared_ptr<HullShaderInfo>> m_HullShaders;				// Íâ¿Ç×ÅÉ«Æ÷
-	std::unordered_map<std::string, std::shared_ptr<DomainShaderInfo>> m_DomainShaders;			// Óò×ÅÉ«Æ÷
-	std::unordered_map<std::string, std::shared_ptr<GeometryShaderInfo>> m_GeometryShaders;		// ¼¸ºÎ×ÅÉ«Æ÷
-	std::unordered_map<std::string, std::shared_ptr<PixelShaderInfo>> m_PixelShaders;			// ÏñËØ×ÅÉ«Æ÷
-	std::unordered_map<std::string, std::shared_ptr<ComputeShaderInfo>> m_ComputeShaders;		// ¼ÆËã×ÅÉ«Æ÷
+	std::unordered_map<std::string, std::shared_ptr<VertexShaderInfo>> m_VertexShaders;			// é¡¶ç‚¹ç€è‰²å™¨
+	std::unordered_map<std::string, std::shared_ptr<HullShaderInfo>> m_HullShaders;				// å¤–å£³ç€è‰²å™¨
+	std::unordered_map<std::string, std::shared_ptr<DomainShaderInfo>> m_DomainShaders;			// åŸŸç€è‰²å™¨
+	std::unordered_map<std::string, std::shared_ptr<GeometryShaderInfo>> m_GeometryShaders;		// å‡ ä½•ç€è‰²å™¨
+	std::unordered_map<std::string, std::shared_ptr<PixelShaderInfo>> m_PixelShaders;			// åƒç´ ç€è‰²å™¨
+	std::unordered_map<std::string, std::shared_ptr<ComputeShaderInfo>> m_ComputeShaders;		// è®¡ç®—ç€è‰²å™¨
 
 
-
+													
 };
 
 //
@@ -509,15 +509,15 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 	{
 		D3D11_SHADER_INPUT_BIND_DESC sibDesc;
 		hr = pShaderReflection->GetResourceBindingDesc(i, &sibDesc);
-		// ¶ÁÈ¡Íê±äÁ¿ºó»áÊ§°Ü£¬µ«Õâ²¢²»ÊÇÊ§°ÜµÄµ÷ÓÃ
+		// è¯»å–å®Œå˜é‡åä¼šå¤±è´¥ï¼Œä½†è¿™å¹¶ä¸æ˜¯å¤±è´¥çš„è°ƒç”¨
 		if (FAILED(hr))
 			break;
 
-		// ³£Á¿»º³åÇø
+		// å¸¸é‡ç¼“å†²åŒº
 		if (sibDesc.Type == D3D_SIT_CBUFFER)
 		{
 			ID3D11ShaderReflectionConstantBuffer* pSRCBuffer = pShaderReflection->GetConstantBufferByName(sibDesc.Name);
-			// »ñÈ¡cbufferÄÚµÄ±äÁ¿ĞÅÏ¢²¢½¨Á¢Ó³Éä
+			// è·å–cbufferå†…çš„å˜é‡ä¿¡æ¯å¹¶å»ºç«‹æ˜ å°„
 			D3D11_SHADER_BUFFER_DESC cbDesc{};
 			hr = pSRCBuffer->GetDesc(&cbDesc);
 			if (FAILED(hr))
@@ -525,7 +525,7 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 
 			bool isParam = !strcmp(sibDesc.Name, "$Params");
 
-			// È·¶¨³£Á¿»º³åÇøµÄ´´½¨Î»ÖÃ
+			// ç¡®å®šå¸¸é‡ç¼“å†²åŒºçš„åˆ›å»ºä½ç½®
 			if (!isParam)
 			{
 				auto it = m_CBuffers.find(sibDesc.BindPoint);
@@ -535,7 +535,7 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 					m_CBuffers[sibDesc.BindPoint].CreateBuffer(device);
 				}
 
-				// ±ê¼Ç¸Ã×ÅÉ«Æ÷Ê¹ÓÃÁËµ±Ç°³£Á¿»º³åÇø
+				// æ ‡è®°è¯¥ç€è‰²å™¨ä½¿ç”¨äº†å½“å‰å¸¸é‡ç¼“å†²åŒº
 				if (cbDesc.Variables > 0)
 				{
 					switch (shaderFlag)
@@ -562,7 +562,7 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 				}
 			}
 
-			// ¼ÇÂ¼ÄÚ²¿±äÁ¿
+			// è®°å½•å†…éƒ¨å˜é‡
 			for (UINT j = 0; j < cbDesc.Variables; ++j)
 			{
 				ID3D11ShaderReflectionVariable* pSRVar = pSRCBuffer->GetVariableByIndex(j);
@@ -571,9 +571,9 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 				if (FAILED(hr))
 					return hr;
 
-				// ×ÅÉ«Æ÷ĞÎ²ÎĞèÒªÌØÊâ¶Ô´ı
-				// ¼ÇÂ¼×ÅÉ«Æ÷µÄuniformĞÎ²Î
-				// **ºöÂÔ×ÅÉ«Æ÷ĞÎ²ÎÄ¬ÈÏÖµ**
+				// ç€è‰²å™¨å½¢å‚éœ€è¦ç‰¹æ®Šå¯¹å¾…
+				// è®°å½•ç€è‰²å™¨çš„uniformå½¢å‚
+				// **å¿½ç•¥ç€è‰²å™¨å½¢å‚é»˜è®¤å€¼**
 				if (isParam)
 				{
 					switch (shaderFlag)
@@ -598,23 +598,23 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 						break;
 					}
 				}
-				// ³£Á¿»º³åÇøµÄ³ÉÔ±
+				// å¸¸é‡ç¼“å†²åŒºçš„æˆå‘˜
 				else
-				{
+				{	
 					m_ConstantBufferVariables[svDesc.Name] = std::make_shared<ConstantBufferVariable>(
 						svDesc.StartOffset, svDesc.Size, &m_CBuffers[sibDesc.BindPoint]);
-					// Èç¹ûÓĞÄ¬ÈÏÖµ£¬¶ÔÆä¸³³õÖµ
+					// å¦‚æœæœ‰é»˜è®¤å€¼ï¼Œå¯¹å…¶èµ‹åˆå€¼
 					if (svDesc.DefaultValue)
 						m_ConstantBufferVariables[svDesc.Name]->SetRaw(svDesc.DefaultValue);
 				}
 			}
+			
+			
 
-
-
-
-
+			
+			
 		}
-		// ×ÅÉ«Æ÷×ÊÔ´
+		// ç€è‰²å™¨èµ„æº
 		else if (sibDesc.Type == D3D_SIT_TEXTURE || sibDesc.Type == D3D_SIT_STRUCTURED || sibDesc.Type == D3D_SIT_BYTEADDRESS ||
 			sibDesc.Type == D3D_SIT_TBUFFER)
 		{
@@ -624,8 +624,8 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 				m_ShaderResources.emplace(std::make_pair(sibDesc.BindPoint,
 					ShaderResource{ sibDesc.Name, sibDesc.Dimension, nullptr }));
 			}
-
-			// ±ê¼Ç¸Ã×ÅÉ«Æ÷Ê¹ÓÃÁËµ±Ç°×ÅÉ«Æ÷×ÊÔ´
+			
+			// æ ‡è®°è¯¥ç€è‰²å™¨ä½¿ç”¨äº†å½“å‰ç€è‰²å™¨èµ„æº
 			switch (shaderFlag)
 			{
 			case VertexShader: m_VertexShaders[name]->srUseMasks[sibDesc.BindPoint / 32] |= (1 << (sibDesc.BindPoint % 32)); break;
@@ -637,7 +637,7 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 			}
 
 		}
-		// ²ÉÑùÆ÷
+		// é‡‡æ ·å™¨
 		else if (sibDesc.Type == D3D_SIT_SAMPLER)
 		{
 			auto it = m_Samplers.find(sibDesc.BindPoint);
@@ -646,8 +646,8 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 				m_Samplers.emplace(std::make_pair(sibDesc.BindPoint,
 					SamplerState{ sibDesc.Name, nullptr }));
 			}
-
-			// ±ê¼Ç¸Ã×ÅÉ«Æ÷Ê¹ÓÃÁËµ±Ç°²ÉÑùÆ÷
+			
+			// æ ‡è®°è¯¥ç€è‰²å™¨ä½¿ç”¨äº†å½“å‰é‡‡æ ·å™¨
 			switch (shaderFlag)
 			{
 			case VertexShader: m_VertexShaders[name]->ssUseMask |= (1 << sibDesc.BindPoint); break;
@@ -659,7 +659,7 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 			}
 
 		}
-		// ¿É¶ÁĞ´×ÊÔ´
+		// å¯è¯»å†™èµ„æº
 		else if (sibDesc.Type == D3D_SIT_UAV_RWTYPED || sibDesc.Type == D3D_SIT_UAV_RWSTRUCTURED ||
 			sibDesc.Type == D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER || sibDesc.Type == D3D_SIT_UAV_APPEND_STRUCTURED ||
 			sibDesc.Type == D3D_SIT_UAV_CONSUME_STRUCTURED || sibDesc.Type == D3D_SIT_UAV_RWBYTEADDRESS)
@@ -671,7 +671,7 @@ HRESULT EffectHelper::Impl::UpdateShaderReflection(LPCSTR name, ID3D11Device* de
 					RWResource{ sibDesc.Name, static_cast<D3D11_UAV_DIMENSION>(sibDesc.Dimension), nullptr, 0, false }));
 			}
 
-			// ±ê¼Ç¸Ã×ÅÉ«Æ÷Ê¹ÓÃÁËµ±Ç°¿É¶ÁĞ´×ÊÔ´
+			// æ ‡è®°è¯¥ç€è‰²å™¨ä½¿ç”¨äº†å½“å‰å¯è¯»å†™èµ„æº
 			switch (shaderFlag)
 			{
 			case PixelShader: m_PixelShaders[name]->rwUseMask |= (1 << sibDesc.BindPoint); break;
@@ -711,7 +711,7 @@ HRESULT EffectHelper::Impl::CreateShaderFromBlob(LPCSTR name, ID3D11Device* devi
 	ComPtr<ID3D11GeometryShader> pGS;
 	ComPtr<ID3D11PixelShader> pPS;
 	ComPtr<ID3D11ComputeShader> pCS;
-	// ´´½¨×ÅÉ«Æ÷
+	// åˆ›å»ºç€è‰²å™¨
 	switch (shaderFlag)
 	{
 	case PixelShader: EFFECTHELPER_CREATE_SHADER(PixelShader, PS);
@@ -742,27 +742,27 @@ HRESULT EffectHelper::AddShader(LPCSTR name, ID3D11Device* device, ID3DBlob* blo
 {
 	if (!name)
 		return E_INVALIDARG;
-
+	
 	HRESULT hr;
 
-	// ×ÅÉ«Æ÷·´Éä
+	// ç€è‰²å™¨åå°„
 	ComPtr<ID3D11ShaderReflection> pShaderReflection;
 	hr = D3DReflect(blob->GetBufferPointer(), blob->GetBufferSize(), __uuidof(ID3D11ShaderReflection),
 		reinterpret_cast<void**>(pShaderReflection.GetAddressOf()));
 	if (FAILED(hr))
 		return hr;
 
-	// »ñÈ¡×ÅÉ«Æ÷ÀàĞÍ
+	// è·å–ç€è‰²å™¨ç±»å‹
 	D3D11_SHADER_DESC sd;
 	pShaderReflection->GetDesc(&sd);
 	UINT shaderFlag = static_cast<ShaderFlag>(1 << D3D11_SHVER_GET_TYPE(sd.Version));
 
-	// ´´½¨×ÅÉ«Æ÷
+	// åˆ›å»ºç€è‰²å™¨
 	hr = pImpl->CreateShaderFromBlob(name, device, shaderFlag, blob);
 	if (FAILED(hr))
 		return hr;
 
-	// ½¨Á¢×ÅÉ«Æ÷·´Éä
+	// å»ºç«‹ç€è‰²å™¨åå°„
 	return pImpl->UpdateShaderReflection(name, device, pShaderReflection.Get(), shaderFlag);
 }
 
@@ -773,14 +773,14 @@ HRESULT EffectHelper::AddGeometryShaderWithStreamOutput(LPCSTR name, ID3D11Devic
 
 	HRESULT hr;
 
-	// ×ÅÉ«Æ÷·´Éä
+	// ç€è‰²å™¨åå°„
 	ComPtr<ID3D11ShaderReflection> pShaderReflection;
 	hr = D3DReflect(blob->GetBufferPointer(), blob->GetBufferSize(), __uuidof(ID3D11ShaderReflection),
 		reinterpret_cast<void**>(pShaderReflection.GetAddressOf()));
 	if (FAILED(hr))
 		return hr;
 
-	// »ñÈ¡×ÅÉ«Æ÷ÀàĞÍ²¢ºËÑé
+	// è·å–ç€è‰²å™¨ç±»å‹å¹¶æ ¸éªŒ
 	D3D11_SHADER_DESC sd;
 	pShaderReflection->GetDesc(&sd);
 	UINT shaderFlag = static_cast<ShaderFlag>(1 << D3D11_SHVER_GET_TYPE(sd.Version));
@@ -791,7 +791,7 @@ HRESULT EffectHelper::AddGeometryShaderWithStreamOutput(LPCSTR name, ID3D11Devic
 	pImpl->m_GeometryShaders[name] = std::make_shared<GeometryShaderInfo>();
 	pImpl->m_GeometryShaders[name]->pGS = gsWithSO;
 
-	// ½¨Á¢×ÅÉ«Æ÷·´Éä
+	// å»ºç«‹ç€è‰²å™¨åå°„
 	return pImpl->UpdateShaderReflection(name, device, pShaderReflection.Get(), shaderFlag);
 }
 
@@ -805,12 +805,12 @@ HRESULT EffectHelper::AddEffectPass(LPCSTR effectPassName, ID3D11Device* device,
 	if (!pDesc || !effectPassName)
 		return E_INVALIDARG;
 
-	// ²»ÔÊĞíÖØ¸´Ìí¼Ó
+	// ä¸å…è®¸é‡å¤æ·»åŠ 
 	auto it = pImpl->m_EffectPasses.find(effectPassName);
 	if (it != pImpl->m_EffectPasses.end())
 		return ERROR_OBJECT_NAME_EXISTS;
 
-	auto pEffectPass = pImpl->m_EffectPasses[effectPassName] =
+	auto pEffectPass = pImpl->m_EffectPasses[effectPassName] = 
 		std::make_shared<EffectPass>(pImpl->m_CBuffers, pImpl->m_ShaderResources, pImpl->m_Samplers, pImpl->m_RWResources);
 
 	EFFECTHELPER_EFFECTPASS_SET_SHADER_AND_PARAM(VertexShader, VS);
@@ -819,7 +819,7 @@ HRESULT EffectHelper::AddEffectPass(LPCSTR effectPassName, ID3D11Device* device,
 	EFFECTHELPER_EFFECTPASS_SET_SHADER_AND_PARAM(GeometryShader, GS);
 	EFFECTHELPER_EFFECTPASS_SET_SHADER_AND_PARAM(PixelShader, PS);
 	EFFECTHELPER_EFFECTPASS_SET_SHADER_AND_PARAM(ComputeShader, CS);
-
+		
 	return S_OK;
 }
 
@@ -882,7 +882,7 @@ void EffectHelper::SetUnorderedAccessBySlot(UINT slot, ID3D11UnorderedAccessView
 		it->second.pUAV = uav;
 		it->second.initialCount = initialCount;
 	}
-
+		
 }
 
 void EffectHelper::SetUnorderedAccessByName(LPCSTR name, ID3D11UnorderedAccessView* uav, UINT initialCount)
@@ -1011,7 +1011,7 @@ std::shared_ptr<IEffectConstantBufferVariable> EffectPass::CSGetParamByName(LPCS
 void EffectPass::Apply(ID3D11DeviceContext* deviceContext)
 {
 	//
-	// ÉèÖÃ×ÅÉ«Æ÷¡¢³£Á¿»º³åÇø¡¢ĞÎ²Î³£Á¿»º³åÇø¡¢²ÉÑùÆ÷¡¢×ÅÉ«Æ÷×ÊÔ´¡¢¿É¶ÁĞ´×ÊÔ´
+	// è®¾ç½®ç€è‰²å™¨ã€å¸¸é‡ç¼“å†²åŒºã€å½¢å‚å¸¸é‡ç¼“å†²åŒºã€é‡‡æ ·å™¨ã€ç€è‰²å™¨èµ„æºã€å¯è¯»å†™èµ„æº
 	//
 	if (pVSInfo)
 	{
@@ -1025,7 +1025,7 @@ void EffectPass::Apply(ID3D11DeviceContext* deviceContext)
 	{
 		deviceContext->VSSetShader(nullptr, nullptr, 0);
 	}
-
+	
 	if (pDSInfo)
 	{
 		EFFECTPASS_SET_SHADER(DS);
@@ -1064,7 +1064,7 @@ void EffectPass::Apply(ID3D11DeviceContext* deviceContext)
 	{
 		deviceContext->GSSetShader(nullptr, nullptr, 0);
 	}
-
+	
 	if (pPSInfo)
 	{
 		EFFECTPASS_SET_SHADER(PS);
@@ -1087,7 +1087,7 @@ void EffectPass::Apply(ID3D11DeviceContext* deviceContext)
 	{
 		deviceContext->PSSetShader(nullptr, nullptr, 0);
 	}
-
+	
 	if (pCSInfo)
 	{
 		EFFECTPASS_SET_SHADER(CS);
@@ -1110,7 +1110,7 @@ void EffectPass::Apply(ID3D11DeviceContext* deviceContext)
 		deviceContext->CSSetShader(nullptr, nullptr, 0);
 	}
 
-	// ÉèÖÃäÖÈ¾×´Ì¬
+	// è®¾ç½®æ¸²æŸ“çŠ¶æ€
 	deviceContext->RSSetState(pRasterizerState.Get());
 	deviceContext->OMSetBlendState(pBlendState.Get(), blendFactor, sampleMask);
 	deviceContext->OMSetDepthStencilState(pDepthStencilState.Get(), stencilRef);

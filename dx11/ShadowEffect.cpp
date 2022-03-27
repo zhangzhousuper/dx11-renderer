@@ -1,6 +1,6 @@
 #include "Effects.h"
 #include "d3dUtil.h"
-#include "EffectHelper.h"	// ±ØĞëÍíÓÚEffects.hºÍd3dUtil.h°üº¬
+#include "EffectHelper.h"	// å¿…é¡»æ™šäºEffects.hå’Œd3dUtil.håŒ…å«
 #include "DXTrace.h"
 #include "Vertex.h"
 using namespace DirectX;
@@ -8,13 +8,13 @@ using namespace DirectX;
 # pragma warning(disable: 26812)
 
 //
-// ShadowEffect::Impl ĞèÒªÏÈÓÚShadowEffectµÄ¶¨Òå
+// ShadowEffect::Impl éœ€è¦å…ˆäºShadowEffectçš„å®šä¹‰
 //
 
 class ShadowEffect::Impl
 {
 public:
-	// ±ØĞëÏÔÊ½Ö¸¶¨
+	// å¿…é¡»æ˜¾å¼æŒ‡å®š
 	Impl() {}
 	~Impl() = default;
 
@@ -36,7 +36,7 @@ public:
 
 namespace
 {
-	// ShadowEffectµ¥Àı
+	// ShadowEffectå•ä¾‹
 	static ShadowEffect* g_pInstance = nullptr;
 }
 
@@ -82,7 +82,7 @@ bool ShadowEffect::InitAll(ID3D11Device* device)
 
 	ComPtr<ID3DBlob> blob;
 
-	// ÊµÀıÊäÈë²¼¾Ö
+	// å®ä¾‹è¾“å…¥å¸ƒå±€
 	D3D11_INPUT_ELEMENT_DESC shadowInstLayout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -94,29 +94,29 @@ bool ShadowEffect::InitAll(ID3D11Device* device)
 	};
 
 	// ******************
-	// ´´½¨¶¥µã×ÅÉ«Æ÷
+	// åˆ›å»ºé¡¶ç‚¹ç€è‰²å™¨
 	//
 
 	HR(CreateShaderFromFile(L"HLSL\\ShadowInstance_VS.cso", L"HLSL\\ShadowInstance_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("ShadowInstance_VS", device, blob.Get()));
-	// ´´½¨¶¥µã²¼¾Ö
+	// åˆ›å»ºé¡¶ç‚¹å¸ƒå±€
 	HR(device->CreateInputLayout(shadowInstLayout, ARRAYSIZE(shadowInstLayout),
 		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pInstancePosNormalTexLayout.GetAddressOf()));
 
 	HR(CreateShaderFromFile(L"HLSL\\ShadowObject_VS.cso", L"HLSL\\ShadowObject_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("ShadowObject_VS", device, blob.Get()));
-	// ´´½¨¶¥µã²¼¾Ö
+	// åˆ›å»ºé¡¶ç‚¹å¸ƒå±€
 	HR(device->CreateInputLayout(VertexPosNormalTex::inputLayout, ARRAYSIZE(VertexPosNormalTex::inputLayout),
 		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexPosNormalTexLayout.GetAddressOf()));
 
 	// ******************
-	// ´´½¨ÏñËØ×ÅÉ«Æ÷
+	// åˆ›å»ºåƒç´ ç€è‰²å™¨
 	//
 	HR(CreateShaderFromFile(L"HLSL\\Shadow_PS.cso", L"HLSL\\Shadow_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("Shadow_PS", device, blob.Get()));
 
 	// ******************
-	// ´´½¨Í¨µÀ
+	// åˆ›å»ºé€šé“
 	//
 	EffectPassDesc passDesc;
 	passDesc.nameVS = "ShadowInstance_VS";
@@ -139,7 +139,7 @@ bool ShadowEffect::InitAll(ID3D11Device* device)
 
 	pImpl->m_pEffectHelper->SetSamplerStateByName("g_Sam", RenderStates::SSLinearWrap.Get());
 
-	// ÉèÖÃµ÷ÊÔ¶ÔÏóÃû
+	// è®¾ç½®è°ƒè¯•å¯¹è±¡å
 	D3D11SetDebugObjectName(pImpl->m_pInstancePosNormalTexLayout.Get(), "ShadowEffect.InstancePosNormalTexLayout");
 	D3D11SetDebugObjectName(pImpl->m_pVertexPosNormalTexLayout.Get(), "ShadowEffect.VertexPosNormalTexLayout");
 	pImpl->m_pEffectHelper->SetDebugObjectName("ShadowEffect");

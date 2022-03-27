@@ -20,9 +20,9 @@
 // 默认开启图形调试器具名化
 // 如果不需要该项功能，可通过全局文本替换将其值设置为0
 #if (defined(DEBUG) || defined(_DEBUG))
-#ifndef GRAPHICS_DEBUGGER_OBJECT_NAME
-#define GRAPHICS_DEBUGGER_OBJECT_NAME 1
-#endif
+	#ifndef GRAPHICS_DEBUGGER_OBJECT_NAME
+	#define GRAPHICS_DEBUGGER_OBJECT_NAME 1
+	#endif
 #endif
 
 #include <string>
@@ -266,7 +266,7 @@ public:
 	void SetSamplerStateBySlot(UINT slot, ID3D11SamplerState* samplerState);
 	// 按名设置采样器状态(若存在同槽多名称则只能使用按槽设置)
 	void SetSamplerStateByName(LPCSTR name, ID3D11SamplerState* samplerState);
-
+	
 	// 按槽设置着色器资源
 	void SetShaderResourceBySlot(UINT slot, ID3D11ShaderResourceView* srv);
 	// 按名设置着色器资源(若存在同槽多名称则只能使用按槽设置)

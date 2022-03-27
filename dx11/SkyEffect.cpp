@@ -1,20 +1,20 @@
 #include "Effects.h"
 #include "d3dUtil.h"
-#include "EffectHelper.h"	// ±ØÐëÍíÓÚEffects.hºÍd3dUtil.h°üº¬
+#include "EffectHelper.h"	// å¿…é¡»æ™šäºŽEffects.hå’Œd3dUtil.håŒ…å«
 #include "DXTrace.h"
 #include "Vertex.h"
 using namespace DirectX;
 
 
 //
-// SkyEffect::Impl ÐèÒªÏÈÓÚSkyEffectµÄ¶¨Òå
+// SkyEffect::Impl éœ€è¦å…ˆäºŽSkyEffectçš„å®šä¹‰
 //
 
 class SkyEffect::Impl
 {
 
 public:
-	// ±ØÐëÏÔÊ½Ö¸¶¨
+	// å¿…é¡»æ˜¾å¼æŒ‡å®š
 	Impl() {}
 	~Impl() = default;
 
@@ -33,8 +33,8 @@ public:
 
 namespace
 {
-	// SkyEffectµ¥Àý
-	static SkyEffect* g_pInstance = nullptr;
+	// SkyEffectå•ä¾‹
+	static SkyEffect * g_pInstance = nullptr;
 }
 
 SkyEffect::SkyEffect()
@@ -49,25 +49,25 @@ SkyEffect::~SkyEffect()
 {
 }
 
-SkyEffect::SkyEffect(SkyEffect&& moveFrom) noexcept
+SkyEffect::SkyEffect(SkyEffect && moveFrom) noexcept
 {
 	pImpl.swap(moveFrom.pImpl);
 }
 
-SkyEffect& SkyEffect::operator=(SkyEffect&& moveFrom) noexcept
+SkyEffect & SkyEffect::operator=(SkyEffect && moveFrom) noexcept
 {
 	pImpl.swap(moveFrom.pImpl);
 	return *this;
 }
 
-SkyEffect& SkyEffect::Get()
+SkyEffect & SkyEffect::Get()
 {
 	if (!g_pInstance)
 		throw std::exception("BasicEffect needs an instance!");
 	return *g_pInstance;
 }
 
-bool SkyEffect::InitAll(ID3D11Device* device)
+bool SkyEffect::InitAll(ID3D11Device * device)
 {
 	if (!device)
 		return false;
@@ -78,25 +78,25 @@ bool SkyEffect::InitAll(ID3D11Device* device)
 	pImpl->m_pEffectHelper = std::make_unique<EffectHelper>();
 
 	ComPtr<ID3DBlob> blob;
-
+	
 	// ******************
-	// ´´½¨¶¥µã×ÅÉ«Æ÷
+	// åˆ›å»ºé¡¶ç‚¹ç€è‰²å™¨
 	//
 
 	HR(CreateShaderFromFile(L"HLSL\\Sky_VS.cso", L"HLSL\\Sky_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("Sky_VS", device, blob.Get()));
-	// ´´½¨¶¥µã²¼¾Ö
+	// åˆ›å»ºé¡¶ç‚¹å¸ƒå±€
 	HR(device->CreateInputLayout(VertexPos::inputLayout, ARRAYSIZE(VertexPos::inputLayout),
 		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pVertexPosLayout.GetAddressOf()));
 
 	// ******************
-	// ´´½¨ÏñËØ×ÅÉ«Æ÷
+	// åˆ›å»ºåƒç´ ç€è‰²å™¨
 	//
 	HR(CreateShaderFromFile(L"HLSL\\Sky_PS.cso", L"HLSL\\Sky_PS.hlsl", "PS", "ps_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("Sky_PS", device, blob.Get()));
 
 	// ******************
-	// ´´½¨Í¨µÀ
+	// åˆ›å»ºé€šé“
 	//
 	EffectPassDesc passDesc;
 	passDesc.nameVS = "Sky_VS";
@@ -108,14 +108,14 @@ bool SkyEffect::InitAll(ID3D11Device* device)
 	pImpl->m_pCurrEffectPass->SetDepthStencilState(RenderStates::DSSLessEqual.Get(), 0);
 	pImpl->m_pCurrEffectPass->SetRasterizerState(RenderStates::RSNoCull.Get());
 
-	// ÉèÖÃµ÷ÊÔ¶ÔÏóÃû
+	// è®¾ç½®è°ƒè¯•å¯¹è±¡å
 	D3D11SetDebugObjectName(pImpl->m_pVertexPosLayout.Get(), "SkyEffect.VertexPosLayout");
 	pImpl->m_pEffectHelper->SetDebugObjectName("SkyEffect");
 
 	return true;
 }
 
-void SkyEffect::SetRenderDefault(ID3D11DeviceContext* deviceContext)
+void SkyEffect::SetRenderDefault(ID3D11DeviceContext * deviceContext)
 {
 	deviceContext->IASetInputLayout(pImpl->m_pVertexPosLayout.Get());
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -136,12 +136,12 @@ void XM_CALLCONV SkyEffect::SetProjMatrix(DirectX::FXMMATRIX P)
 	XMStoreFloat4x4(&pImpl->m_Proj, P);
 }
 
-void SkyEffect::SetTextureCube(ID3D11ShaderResourceView* m_pTextureCube)
+void SkyEffect::SetTextureCube(ID3D11ShaderResourceView * m_pTextureCube)
 {
 	pImpl->m_pEffectHelper->SetShaderResourceByName("g_TexCube", m_pTextureCube);
 }
 
-void SkyEffect::Apply(ID3D11DeviceContext* deviceContext)
+void SkyEffect::Apply(ID3D11DeviceContext * deviceContext)
 {
 	XMMATRIX WVP = XMLoadFloat4x4(&pImpl->m_World) * XMLoadFloat4x4(&pImpl->m_View) * XMLoadFloat4x4(&pImpl->m_Proj);
 	WVP = XMMatrixTranspose(WVP);
