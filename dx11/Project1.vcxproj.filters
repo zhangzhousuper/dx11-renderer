@@ -81,6 +81,9 @@
     <ClInclude Include="SkyRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="TextureRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp">
@@ -146,14 +149,28 @@
     <ClCompile Include="SkyEffect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TextureRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowEffect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugEffect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\LightHelper.hlsli" />
     <None Include="HLSL\Basic.hlsli" />
     <None Include="HLSL\Light.hlsli" />
     <None Include="Project1.vcxproj.user" />
-    <None Include="Model\house.mbo" />
     <None Include="HLSL\Sky.hlsli" />
+    <None Include="HLSL\DebugTexture.hlsli" />
+    <None Include="Model\ground.mtl" />
+    <None Include="Model\house.mbo" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\BasicObject_VS.hlsl" />
@@ -164,6 +181,13 @@
     <FxCompile Include="HLSL\NormalMapObject_VS.hlsl" />
     <FxCompile Include="HLSL\NormalMapInstance_VS.hlsl" />
     <FxCompile Include="HLSL\NormalMap_PS.hlsl" />
+    <FxCompile Include="HLSL\Shadow_PS.hlsl" />
+    <FxCompile Include="HLSL\ShadowInstance_VS.hlsl" />
+    <FxCompile Include="HLSL\ShadowObject_VS.hlsl" />
+    <FxCompile Include="HLSL\DebugTexture_VS.hlsl" />
+    <FxCompile Include="HLSL\DebugTextureOneComp_PS.hlsl" />
+    <FxCompile Include="HLSL\DebugTextureOneCompGray_PS.hlsl" />
+    <FxCompile Include="HLSL\DebugTextureRGBA_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />
@@ -179,5 +203,9 @@
     <Image Include="Model\house.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="Model\grass.dds" />
+    <Image Include="Model\tree_00.dds" />
+    <Image Include="Model\tree_01.dds" />
+    <Image Include="Model\tree_02.dds" />
   </ItemGroup>
 </Project>

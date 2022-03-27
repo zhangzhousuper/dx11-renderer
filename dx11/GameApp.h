@@ -1,24 +1,20 @@
 #ifndef GAMEAPP_H
 #define GAMEAPP_H
 
-#include <DirectXColors.h>
+#include <random>
 #include "d3dApp.h"
 #include "Camera.h"
 #include "GameObject.h"
-#include "SkyRender.h"
 #include "ObjReader.h"
 #include "Collision.h"
+#include "SkyRender.h"
+#include "TextureRender.h"
+
 class GameApp : public D3DApp
 {
 public:
 	// 摄像机模式
 	enum class CameraMode { FirstPerson, ThirdPerson, Free };
-	// 天空盒模式
-	enum class SkyBoxMode { Daylight, Sunset, Desert };
-	// 球体当前模式
-	enum class SphereMode { None, Reflection, Refraction };
-	// 地面模式
-	enum class GroundMode { Floor, Stones };
 public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
@@ -27,51 +23,52 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
-	void DrawScene(bool drawCenterSphere);
+	void DrawScene(BasicEffect* pBasicEffect, bool enableNormalMap = false);
+	void DrawScene(ShadowEffect* pShadowEffect);
 
 private:
 	bool InitResource();
-	
+
 private:
-	
+
 	ComPtr<ID2D1SolidColorBrush> m_pColorBrush;				    // 单色笔刷
 	ComPtr<IDWriteFont> m_pFont;								// 字体
 	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
-ComPtr<ID3D11ShaderResourceView> m_FloorDiffuse;			// 地板纹理
-	ComPtr<ID3D11ShaderResourceView> m_StonesDiffuse;		    // 鹅卵石面纹理
 
-	Model m_GroundModel;										// 地面网格模型
-	Model m_GroundTModel;									    // 带切线的地面网格模型
+	bool m_EnableNormalMap;										// 开启法线贴图
+	bool m_EnableDebug;											// 开启调试模式
+	bool m_GrayMode;											// 深度值以灰度形式显示
+	int m_SlopeIndex;			     							// 斜率索引
 
-	GameObject m_Sphere;										// 球
 	GameObject m_Ground;										// 地面
-	GameObject m_GroundT;									    // 带切线向量的地面
-	GameObject m_Cylinder;									    // 圆柱
-	GameObject m_CylinderT;									    // 带切线向量的圆柱
-	GroundMode m_GroundMode;									// 地面模式
+	GameObject m_GroundT;										// 带切线向量的地面
 
-	float m_SphereRad;											// 球体旋转弧度
+	GameObject m_Cylinder;										// 圆柱体
+	GameObject m_CylinderT;										// 带切线向量的圆柱体
+	std::vector<Transform> m_CylinderTransforms;				// 圆柱体变换信息
 
+	GameObject m_Sphere;										// 球体
+	GameObject m_SphereT;										// 带切线向量的球体
+	std::vector<Transform> m_SphereTransforms;					// 球体变换信息
 
-	ComPtr<ID3D11ShaderResourceView> m_BricksNormalMap;		    // 砖块法线贴图
-	ComPtr<ID3D11ShaderResourceView> m_FloorNormalMap;		    // 地面法线贴图
-	ComPtr<ID3D11ShaderResourceView> m_StonesNormalMap;		    // 石头地面法线贴图
-	bool m_EnableNormalMap;									    // 开启法线贴图
+	GameObject m_House;											// 房屋
 
-	BasicEffect m_BasicEffect;								    // 对象渲染特效管理
-	SkyEffect m_SkyEffect;									    // 天空盒特效管理
-	std::unique_ptr<DynamicSkyRender> m_pDaylight;			    // 天空盒(白天)
-	std::unique_ptr<DynamicSkyRender> m_pSunset;				// 天空盒(日落)
-	std::unique_ptr<DynamicSkyRender> m_pDesert;				// 天空盒(沙漠)
-	SkyBoxMode m_SkyBoxMode;									// 天空盒模式
+	GameObject m_DebugQuad;										// 调试用四边形
+	GameObject m_FullScreenDebugQuad;							// 全屏调试用四边形
 
-	SphereMode m_SphereMode;									// 球渲染模式
-	float m_Eta;												// 空气/介质折射率
+	DirectionalLight m_DirLights[3] = {};						// 方向光
+	DirectX::XMFLOAT3 m_OriginalLightDirs[3] = {};				// 初始光方向
+
+	std::unique_ptr<BasicEffect> m_pBasicEffect;				// 基础特效
+	std::unique_ptr<ShadowEffect> m_pShadowEffect;				// 阴影特效
+	std::unique_ptr<SkyEffect> m_pSkyEffect;					// 天空盒特效
+	std::unique_ptr<DebugEffect> m_pDebugEffect;				// 调试用显示纹理的特效
+
+	std::unique_ptr<TextureRender> m_pShadowMap;				// 阴影贴图
+	std::unique_ptr<TextureRender> m_pGrayShadowMap;			// 用于调试的RGB阴影贴图
+	std::unique_ptr<SkyRender> m_pDesert;						// 天空盒(沙漠)
 
 	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
-	CameraMode m_CameraMode;									// 摄像机模式
-
-	ObjReader m_ObjReader;									    // 模型读取对象
 };
 
 

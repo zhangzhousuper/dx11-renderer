@@ -1,5 +1,5 @@
 //***************************************************************************************
-// Model.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// Model.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 存放模型数据
@@ -32,6 +32,7 @@ struct ModelPart
 
 	Material material;
 	ComPtr<ID3D11ShaderResourceView> texDiffuse;
+	ComPtr<ID3D11ShaderResourceView> texNormalMap;
 	ComPtr<ID3D11Buffer> vertexBuffer;
 	ComPtr<ID3D11Buffer> indexBuffer;
 	UINT vertexCount;
@@ -44,36 +45,36 @@ struct Model
 	// 使用模板别名(C++11)简化类型名
 	template <class T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
-	
+
 	Model();
-	Model(ID3D11Device * device, const ObjReader& model);
+	Model(ID3D11Device* device, const ObjReader& model);
 	// 设置缓冲区
 	template<class VertexType, class IndexType>
-	Model(ID3D11Device * device, const Geometry::MeshData<VertexType, IndexType>& meshData);
-	
+	Model(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData);
+
 	template<class VertexType, class IndexType>
-	Model(ID3D11Device * device, const std::vector<VertexType> & vertices, const std::vector<IndexType>& indices);
-	
-	
-	Model(ID3D11Device * device, const void* vertices, UINT vertexSize, UINT vertexCount,
-		const void * indices, UINT indexCount, DXGI_FORMAT indexFormat);
+	Model(ID3D11Device* device, const std::vector<VertexType>& vertices, const std::vector<IndexType>& indices);
+
+
+	Model(ID3D11Device* device, const void* vertices, UINT vertexSize, UINT vertexCount,
+		const void* indices, UINT indexCount, DXGI_FORMAT indexFormat);
 	//
 	// 设置模型
 	//
 
-	void SetModel(ID3D11Device * device, const ObjReader& model);
+	void SetModel(ID3D11Device* device, const ObjReader& model);
 
 	//
 	// 设置网格
 	//
 	template<class VertexType, class IndexType>
-	void SetMesh(ID3D11Device * device, const Geometry::MeshData<VertexType, IndexType>& meshData);
+	void SetMesh(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData);
 
 	template<class VertexType, class IndexType>
-	void SetMesh(ID3D11Device * device, const std::vector<VertexType> & vertices, const std::vector<IndexType>& indices);
+	void SetMesh(ID3D11Device* device, const std::vector<VertexType>& vertices, const std::vector<IndexType>& indices);
 
-	void SetMesh(ID3D11Device * device, const void* vertices, UINT vertexSize, UINT vertexCount,
-		const void * indices, UINT indexCount, DXGI_FORMAT indexFormat);
+	void SetMesh(ID3D11Device* device, const void* vertices, UINT vertexSize, UINT vertexCount,
+		const void* indices, UINT indexCount, DXGI_FORMAT indexFormat);
 
 	//
 	// 调试 
@@ -92,27 +93,27 @@ struct Model
 
 
 template<class VertexType, class IndexType>
-inline Model::Model(ID3D11Device * device, const Geometry::MeshData<VertexType, IndexType>& meshData)
+inline Model::Model(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData)
 	: modelParts(), boundingBox(), vertexStride()
 {
 	SetMesh(device, meshData);
 }
 
 template<class VertexType, class IndexType>
-inline Model::Model(ID3D11Device * device, const std::vector<VertexType> & vertices, const std::vector<IndexType>& indices)
+inline Model::Model(ID3D11Device* device, const std::vector<VertexType>& vertices, const std::vector<IndexType>& indices)
 	: modelParts(), boundingBox(), vertexStride()
 {
 	SetMesh(device, vertices, indices);
 }
 
 template<class VertexType, class IndexType>
-inline void Model::SetMesh(ID3D11Device * device, const Geometry::MeshData<VertexType, IndexType>& meshData)
+inline void Model::SetMesh(ID3D11Device* device, const Geometry::MeshData<VertexType, IndexType>& meshData)
 {
 	SetMesh(device, meshData.vertexVec, meshData.indexVec);
 }
 
 template<class VertexType, class IndexType>
-inline void Model::SetMesh(ID3D11Device * device, const std::vector<VertexType> & vertices, const std::vector<IndexType>& indices)
+inline void Model::SetMesh(ID3D11Device* device, const std::vector<VertexType>& vertices, const std::vector<IndexType>& indices)
 {
 	static_assert(sizeof(IndexType) == 2 || sizeof(IndexType) == 4, "The size of IndexType must be 2 bytes or 4 bytes!");
 	static_assert(std::is_unsigned<IndexType>::value, "IndexType must be unsigned integer!");

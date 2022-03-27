@@ -9,20 +9,20 @@ Model::Model()
 {
 }
 
-Model::Model(ID3D11Device * device, const ObjReader & model)
+Model::Model(ID3D11Device* device, const ObjReader& model)
 	: modelParts(), boundingBox(), vertexStride()
 {
 	SetModel(device, model);
 }
 
-Model::Model(ID3D11Device * device, const void* vertices, UINT vertexSize, UINT vertexCount,
-	const void * indices, UINT indexCount, DXGI_FORMAT indexFormat)
+Model::Model(ID3D11Device* device, const void* vertices, UINT vertexSize, UINT vertexCount,
+	const void* indices, UINT indexCount, DXGI_FORMAT indexFormat)
 	: modelParts(), boundingBox(), vertexStride()
 {
 	SetMesh(device, vertices, vertexSize, vertexCount, indices, indexCount, indexFormat);
 }
 
-void Model::SetModel(ID3D11Device * device, const ObjReader & model)
+void Model::SetModel(ID3D11Device* device, const ObjReader& model)
 {
 	vertexStride = sizeof(VertexPosNormalTex);
 
@@ -73,7 +73,7 @@ void Model::SetModel(ID3D11Device * device, const ObjReader & model)
 		// 新建索引缓冲区
 		HR(device->CreateBuffer(&ibd, &InitData, modelParts[i].indexBuffer.ReleaseAndGetAddressOf()));
 
-		
+
 		// 创建漫射光对应纹理
 		auto& strD = part.texStrDiffuse;
 		if (strD.size() > 4)
@@ -96,7 +96,7 @@ void Model::SetModel(ID3D11Device * device, const ObjReader & model)
 
 }
 
-void Model::SetMesh(ID3D11Device * device, const void * vertices, UINT vertexSize, UINT vertexCount, const void * indices, UINT indexCount, DXGI_FORMAT indexFormat)
+void Model::SetMesh(ID3D11Device* device, const void* vertices, UINT vertexSize, UINT vertexCount, const void* indices, UINT indexCount, DXGI_FORMAT indexFormat)
 {
 	vertexStride = vertexSize;
 

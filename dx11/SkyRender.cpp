@@ -76,7 +76,11 @@ void SkyRender::Draw(ID3D11DeviceContext* deviceContext, SkyEffect& skyEffect, c
 	// 抹除平移分量，避免摄像机移动带来天空盒抖动
 	XMMATRIX V = camera.GetViewXM();
 	V.r[3] = g_XMIdentityR3;
-	skyEffect.SetWorldViewProjMatrix(V * camera.GetProjXM());
+	
+	skyEffect.SetWorldMatrix(XMMatrixIdentity());
+	skyEffect.SetViewMatrix(V);
+	skyEffect.SetProjMatrix(camera.GetProjXM());
+
 	skyEffect.SetTextureCube(m_pTextureCubeSRV.Get());
 	skyEffect.Apply(deviceContext);
 	deviceContext->DrawIndexed(m_IndexCount, 0, 0);

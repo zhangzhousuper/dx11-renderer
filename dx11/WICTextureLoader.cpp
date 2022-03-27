@@ -170,43 +170,43 @@ namespace
 
         IWICImagingFactory* factory = nullptr;
         InitOnceExecuteOnce(&s_initOnce,
-            [](PINIT_ONCE, PVOID, PVOID *ifactory) -> BOOL
-        {
+            [](PINIT_ONCE, PVOID, PVOID* ifactory) -> BOOL
+            {
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
-            HRESULT hr = CoCreateInstance(
-                CLSID_WICImagingFactory2,
-                nullptr,
-                CLSCTX_INPROC_SERVER,
-                __uuidof(IWICImagingFactory2),
-                ifactory
-            );
+                HRESULT hr = CoCreateInstance(
+                    CLSID_WICImagingFactory2,
+                    nullptr,
+                    CLSCTX_INPROC_SERVER,
+                    __uuidof(IWICImagingFactory2),
+                    ifactory
+                );
 
-            if (SUCCEEDED(hr))
-            {
-                // WIC2 is available on Windows 10, Windows 8.x, and Windows 7 SP1 with KB 2670838 installed
-                g_WIC2 = true;
-                return TRUE;
-            }
-            else
-            {
-                hr = CoCreateInstance(
-                    CLSID_WICImagingFactory1,
+                if (SUCCEEDED(hr))
+                {
+                    // WIC2 is available on Windows 10, Windows 8.x, and Windows 7 SP1 with KB 2670838 installed
+                    g_WIC2 = true;
+                    return TRUE;
+                }
+                else
+                {
+                    hr = CoCreateInstance(
+                        CLSID_WICImagingFactory1,
+                        nullptr,
+                        CLSCTX_INPROC_SERVER,
+                        __uuidof(IWICImagingFactory),
+                        ifactory
+                    );
+                    return SUCCEEDED(hr) ? TRUE : FALSE;
+                }
+#else
+                return SUCCEEDED(CoCreateInstance(
+                    CLSID_WICImagingFactory,
                     nullptr,
                     CLSCTX_INPROC_SERVER,
                     __uuidof(IWICImagingFactory),
-                    ifactory
-                );
-                return SUCCEEDED(hr) ? TRUE : FALSE;
-            }
-#else
-            return SUCCEEDED(CoCreateInstance(
-                CLSID_WICImagingFactory,
-                nullptr,
-                CLSCTX_INPROC_SERVER,
-                __uuidof(IWICImagingFactory),
-                ifactory)) ? TRUE : FALSE;
+                    ifactory)) ? TRUE : FALSE;
 #endif
-        }, nullptr, reinterpret_cast<LPVOID*>(&factory));
+            }, nullptr, reinterpret_cast<LPVOID*>(&factory));
 
         return factory;
     }
@@ -296,7 +296,7 @@ namespace
     //---------------------------------------------------------------------------------
     HRESULT CreateTextureFromWIC(_In_ ID3D11Device* d3dDevice,
         _In_opt_ ID3D11DeviceContext* d3dContext,
-        _In_ IWICBitmapFrameDecode *frame,
+        _In_ IWICBitmapFrameDecode* frame,
         _In_ size_t maxsize,
         _In_ D3D11_USAGE usage,
         _In_ unsigned int bindFlags,

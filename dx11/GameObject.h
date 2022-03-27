@@ -63,10 +63,9 @@ public:
 	//
 
 	// 绘制对象
-	void Draw(ID3D11DeviceContext * deviceContext, BasicEffect& effect);
+	void Draw(ID3D11DeviceContext* deviceContext, IEffect* effect);
 	// 绘制实例
-	void DrawInstanced(ID3D11DeviceContext* deviceContext, BasicEffect& effect, const std::vector<Transform>& data);
-
+	void DrawInstanced(ID3D11DeviceContext* deviceContext, IEffect* effect, const std::vector<Transform>& data);
 	//
 	// 调试 
 	//

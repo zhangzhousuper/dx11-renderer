@@ -12,5 +12,6 @@ VertexPosHWNormalTex VS(VertexPosNormalTex vIn)
     vOut.PosH = mul(posW, viewProj);
     vOut.NormalW = mul(vIn.NormalL, (float3x3) g_WorldInvTranspose);
     vOut.Tex = vIn.Tex;
+    vOut.ShadwoPosH = mul(posW, g_ShadowTransform);
     return vOut;
 }
