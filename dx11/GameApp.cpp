@@ -424,12 +424,12 @@ bool GameApp::InitResource()
 
 	ComPtr<ID3D11ShaderResourceView> bricksNormalMap, floorNormalMap, bricksDiffuse, floorDiffuse, stoneDiffuse;
 
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\bricks_nmap.dds", nullptr, bricksNormalMap.GetAddressOf()));
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\floor_nmap.dds", nullptr, floorNormalMap.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"..\\Texture\\bricks_nmap.dds", nullptr, bricksNormalMap.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"..\\Texture\\floor_nmap.dds", nullptr, floorNormalMap.GetAddressOf()));
 
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\bricks.dds", nullptr, bricksDiffuse.GetAddressOf()));
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\floor.dds", nullptr, floorDiffuse.GetAddressOf()));
-	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\stone.dds", nullptr, stoneDiffuse.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"..\\Texture\\bricks.dds", nullptr, bricksDiffuse.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"..\\Texture\\floor.dds", nullptr, floorDiffuse.GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"..\\Texture\\stone.dds", nullptr, stoneDiffuse.GetAddressOf()));
 
 	// 地面
 	Model groundModel, groundTModel;
@@ -503,7 +503,7 @@ bool GameApp::InitResource()
 	// 房屋
 	// 修改了mtl文件让其更亮
 	ObjReader objReader;
-	objReader.Read(L"Model\\house.mbo", L"Model\\house.obj");
+	objReader.Read(L"..\\Model\\house.mbo", L"..\\Model\\house.obj");
 
 	m_House.SetModel(Model(m_pd3dDevice.Get(), objReader));
 
@@ -530,7 +530,7 @@ bool GameApp::InitResource()
 
 	m_pDesert = std::make_unique<SkyRender>();
 	HR(m_pDesert->InitResource(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(),
-		L"Texture\\desertcube1024.dds", 5000.0f));
+		L"..\\Texture\\desertcube1024.dds", 5000.0f));
 
 	m_pBasicEffect->SetTextureCube(m_pDesert->GetTextureCube());
 
