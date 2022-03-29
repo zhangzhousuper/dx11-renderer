@@ -1,15 +1,18 @@
 #include "LightHelper.hlsli"
 
-Texture2D g_DiffuseMap : register(t0); // 物体纹理
-Texture2D g_DisplacementMap : register(t1); // 位移贴图
-SamplerState g_SamLinearWrap : register(s0); // 线性过滤+Wrap采样器
-SamplerState g_SamPointClamp : register(s1); // 点过滤+Clamp采样器
+Texture2D g_DiffuseMap : register(t0);
+Texture2D g_NormalMap : register(t1);
+Texture2D g_ShadowMap : register(t2);
+Texture2D g_SSAOMap : register(t3);
+TextureCube g_TexCube : register(t4);
+SamplerState g_Sam : register(s0);
+SamplerComparisonState g_SamShadow : register(s1);
 
 cbuffer CBChangesEveryInstanceDrawing : register(b0)
 {
     matrix g_World;
     matrix g_WorldInvTranspose;
-    matrix g_TexTransform;
+    matrix g_WorldViewProj;
 }
 
 cbuffer CBChangesEveryObjectDrawing : register(b1)
@@ -17,24 +20,20 @@ cbuffer CBChangesEveryObjectDrawing : register(b1)
     Material g_Material;
 }
 
-cbuffer CBChangesEveryFrame : register(b2)
+cbuffer CBDrawingStates : register(b2)
 {
-    matrix g_View;
-    float3 g_EyePosW;
+    int g_TextureUsed;
+    int g_EnableShadow;
+    int g_EnableSSAO;
     float g_Pad;
 }
 
-cbuffer CBDrawingStates : register(b3)
+cbuffer CBChangesEveryFrame : register(b3)
 {
-    float4 g_FogColor;
-    int g_FogEnabled;
-    float g_FogStart;
-    float g_FogRange;
-    int g_TextureUsed;
-    
-    int g_WavesEnabled; // 开启波浪绘制
-    float2 g_DisplacementMapTexelSize; // 位移贴图两个相邻像素对应顶点之间的x,y方向间距
-    float g_GridSpatialStep; // 栅格空间步长
+    matrix g_View;
+    matrix g_ShadowTransform;   // ShadowView * ShadowProj * T
+    float3 g_EyePosW;
+    float g_Pad2;
 }
 
 cbuffer CBChangesOnResize : register(b4)
@@ -56,6 +55,14 @@ struct VertexPosNormalTex
     float2 Tex : TEXCOORD;
 };
 
+struct VertexPosNormalTangentTex
+{
+    float3 PosL : POSITION;
+    float3 NormalL : NORMAL;
+    float4 TangentL : TANGENT;
+    float2 Tex : TEXCOORD;
+};
+
 struct InstancePosNormalTex
 {
     float3 PosL : POSITION;
@@ -65,10 +72,34 @@ struct InstancePosNormalTex
     matrix WorldInvTranspose : WorldInvTranspose;
 };
 
-struct VertexPosHWNormalTex
+struct InstancePosNormalTangentTex
+{
+    float3 PosL : POSITION;
+    float3 NormalL : NORMAL;
+    float4 TangentL : TANGENT;
+    float2 Tex : TEXCOORD;
+    matrix World : World;
+    matrix WorldInvTranspose : WorldInvTranspose;
+};
+
+struct VertexOutBasic
 {
     float4 PosH : SV_POSITION;
     float3 PosW : POSITION; // 在世界中的位置
     float3 NormalW : NORMAL; // 法向量在世界中的方向
-    float2 Tex : TEXCOORD;
+    float2 Tex : TEXCOORD0;
+    float4 ShadowPosH : TEXCOORD1;
+    float4 SSAOPosH : TEXCOORD2;
 };
+
+struct VertexOutNormalMap
+{
+    float4 PosH : SV_POSITION;
+    float3 PosW : POSITION; // 在世界中的位置
+    float3 NormalW : NORMAL; // 法向量在世界中的方向
+    float4 TangentW : TANGENT; // 切线在世界中的方向
+    float2 Tex : TEXCOORD0;
+    float4 ShadowPosH : TEXCOORD1;
+    float4 SSAOPosH : TEXCOORD2;
+};
+

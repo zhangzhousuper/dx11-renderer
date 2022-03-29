@@ -1,5 +1,5 @@
 //***************************************************************************************
-// Model.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// Model.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 存放模型数据
@@ -32,6 +32,7 @@ struct ModelPart
 
 	Material material;
 	ComPtr<ID3D11ShaderResourceView> texDiffuse;
+	ComPtr<ID3D11ShaderResourceView> texNormalMap;
 	ComPtr<ID3D11Buffer> vertexBuffer;
 	ComPtr<ID3D11Buffer> indexBuffer;
 	UINT vertexCount;

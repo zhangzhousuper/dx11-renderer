@@ -84,13 +84,13 @@
     <ClInclude Include="ScreenGrab.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="WavesRender.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="OITRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="TextureRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SSAORender.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -155,13 +155,31 @@
     <ClCompile Include="ScreenGrab.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="WavesRender.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="OITRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TextureRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SSAORender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SSAOEffect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyEffect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugEffect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowEffect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,6 +191,24 @@
     <None Include="Model\house.mbo" />
     <None Include="HLSL\Sky.hlsli" />
     <None Include="HLSL\Waves.hlsli" />
+    <None Include="HLSL\SSAO.hlsli" />
+    <None Include="HLSL\Basic_PS.cso" />
+    <None Include="HLSL\Basicinstance_VS.cso" />
+    <None Include="HLSL\BasicObject_VS.cso" />
+    <None Include="HLSL\DebugTexture.hlsli" />
+    <None Include="HLSL\OIT_Render_PS.cso" />
+    <None Include="HLSL\OIT_Render_VS.cso" />
+    <None Include="HLSL\Sky_PS.cso" />
+    <None Include="HLSL\Sky_VS.cso" />
+    <None Include="HLSL\SSAO_Blur_PS.cso" />
+    <None Include="HLSL\SSAO_Blur_VS.cso" />
+    <None Include="HLSL\SSAO_NormalDepth_Instance_VS.cso" />
+    <None Include="HLSL\SSAO_NormalDepth_Object_VS.cso" />
+    <None Include="HLSL\SSAO_NormalDepth_PS.cso" />
+    <None Include="HLSL\SSAO_PS.cso" />
+    <None Include="HLSL\SSAO_VS.cso" />
+    <None Include="HLSL\WavesDisturb_CS.cso" />
+    <None Include="HLSL\WavesUpdate_CS.cso" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\BasicObject_VS.hlsl" />
@@ -184,9 +220,25 @@
     <FxCompile Include="HLSL\WavesDisturb_CS.hlsl" />
     <FxCompile Include="HLSL\WavesUpdate_CS.hlsl" />
     <FxCompile Include="HLSL\Basic_PS.hlsl" />
-    <FxCompile Include="HLSL\OIT_Store_PS.hlsl" />
-    <FxCompile Include="HLSL\OIT_Render_VS.hlsl" />
-    <FxCompile Include="HLSL\OIT_Render_PS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_Object_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_Instance_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_PS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_PS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_Blur_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_Blur_PS.hlsl" />
+    <FxCompile Include="HLSL\DebugTexture_VS.hlsl" />
+    <FxCompile Include="HLSL\DebugTextureOneComp_PS.hlsl" />
+    <FxCompile Include="HLSL\DebugTextureOneCompGray_PS.hlsl" />
+    <FxCompile Include="HLSL\DebugTextureRGBA_PS.hlsl" />
+    <FxCompile Include="HLSL\Light_PS.hlsl" />
+    <FxCompile Include="HLSL\Light_VS.hlsl" />
+    <FxCompile Include="HLSL\NormalMap_PS.hlsl" />
+    <FxCompile Include="HLSL\NormalMapInstance_VS.hlsl" />
+    <FxCompile Include="HLSL\NormalMapObject_VS.hlsl" />
+    <FxCompile Include="HLSL\Shadow_PS.hlsl" />
+    <FxCompile Include="HLSL\ShadowInstance_VS.hlsl" />
+    <FxCompile Include="HLSL\ShadowObject_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />

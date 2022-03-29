@@ -76,7 +76,7 @@ void GameObject::SetModel(const Model & model)
 	m_Model = model;
 }
 
-void GameObject::Draw(ID3D11DeviceContext * deviceContext, BasicEffect & effect)
+void GameObject::Draw(ID3D11DeviceContext * deviceContext, IEffect * effect)
 {
 	UINT strides = m_Model.vertexStride;
 	UINT offsets = 0;
@@ -88,17 +88,32 @@ void GameObject::Draw(ID3D11DeviceContext * deviceContext, BasicEffect & effect)
 		deviceContext->IASetIndexBuffer(part.indexBuffer.Get(), part.indexFormat, 0);
 
 		// 更新数据并应用
-		effect.SetWorldMatrix(m_Transform.GetLocalToWorldMatrixXM());
-		effect.SetTextureDiffuse(part.texDiffuse.Get());
-		effect.SetMaterial(part.material);
+		IEffectTransform* pEffectTransform = dynamic_cast<IEffectTransform*>(effect);
+		if (pEffectTransform)
+		{
+			pEffectTransform->SetWorldMatrix(m_Transform.GetLocalToWorldMatrixXM());
+		}
+
+		IEffectTextureDiffuse* pEffectTextureDiffuse = dynamic_cast<IEffectTextureDiffuse*>(effect);
+		if (pEffectTextureDiffuse)
+		{
+			pEffectTextureDiffuse->SetTextureDiffuse(part.texDiffuse.Get());
+		}
+
+		BasicEffect* pBasicEffect = dynamic_cast<BasicEffect*>(effect);
+		if (pBasicEffect)
+		{
+			pBasicEffect->SetTextureNormalMap(part.texNormalMap.Get());
+			pBasicEffect->SetMaterial(part.material);
+		}
 		
-		effect.Apply(deviceContext);
+		effect->Apply(deviceContext);
 
 		deviceContext->DrawIndexed(part.indexCount, 0, 0);
 	}
 }
 
-void GameObject::DrawInstanced(ID3D11DeviceContext* deviceContext, BasicEffect& effect, const std::vector<Transform>& data)
+void GameObject::DrawInstanced(ID3D11DeviceContext* deviceContext, IEffect * effect, const std::vector<Transform> & data)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedData;
 	UINT numInsts = (UINT)data.size();
@@ -135,9 +150,20 @@ void GameObject::DrawInstanced(ID3D11DeviceContext* deviceContext, BasicEffect& 
 		deviceContext->IASetIndexBuffer(part.indexBuffer.Get(), part.indexFormat, 0);
 
 		// 更新数据并应用
-		effect.SetTextureDiffuse(part.texDiffuse.Get());
-		effect.SetMaterial(part.material);
-		effect.Apply(deviceContext);
+		IEffectTextureDiffuse* pEffectTextureDiffuse = dynamic_cast<IEffectTextureDiffuse*>(effect);
+		if (pEffectTextureDiffuse)
+		{
+			pEffectTextureDiffuse->SetTextureDiffuse(part.texDiffuse.Get());
+		}
+
+		BasicEffect* pBasicEffect = dynamic_cast<BasicEffect*>(effect);
+		if (pBasicEffect)
+		{
+			pBasicEffect->SetTextureNormalMap(part.texNormalMap.Get());
+			pBasicEffect->SetMaterial(part.material);
+		}
+
+		effect->Apply(deviceContext);
 
 		deviceContext->DrawIndexedInstanced(part.indexCount, numInsts, 0, 0, 0);
 	}

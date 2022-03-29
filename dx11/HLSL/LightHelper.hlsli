@@ -1,5 +1,5 @@
 
-// ·½Ïò¹â
+// æ–¹å‘å…‰
 struct DirectionalLight
 {
     float4 Ambient;
@@ -9,7 +9,7 @@ struct DirectionalLight
     float Pad;
 };
 
-// µã¹â
+// ç‚¹å…‰
 struct PointLight
 {
     float4 Ambient;
@@ -23,7 +23,7 @@ struct PointLight
     float Pad;
 };
 
-// ¾Û¹âµÆ
+// èšå…‰ç¯
 struct SpotLight
 {
     float4 Ambient;
@@ -40,7 +40,7 @@ struct SpotLight
     float Pad;
 };
 
-// ÎïÌå±íÃæ²ÄÖÊ
+// ç‰©ä½“è¡¨é¢æè´¨
 struct Material
 {
     float4 Ambient;
@@ -57,21 +57,21 @@ void ComputeDirectionalLight(Material mat, DirectionalLight L,
 	out float4 diffuse,
 	out float4 spec)
 {
-	// ³õÊ¼»¯Êä³ö
+	// åˆå§‹åŒ–è¾“å‡º
     ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// ¹âÏòÁ¿ÓëÕÕÉä·½ÏòÏà·´
+	// å…‰å‘é‡ä¸ç…§å°„æ–¹å‘ç›¸å
     float3 lightVec = -L.Direction;
 
-	// Ìí¼Ó»·¾³¹â
+	// æ·»åŠ ç¯å¢ƒå…‰
     ambient = mat.Ambient * L.Ambient;
 
-	// Ìí¼ÓÂş·´Éä¹âºÍ¾µÃæ¹â
+	// æ·»åŠ æ¼«åå°„å…‰å’Œé•œé¢å…‰
     float diffuseFactor = dot(lightVec, normal);
 
-	// Õ¹¿ª£¬±ÜÃâ¶¯Ì¬·ÖÖ§
+	// å±•å¼€ï¼Œé¿å…åŠ¨æ€åˆ†æ”¯
 	[flatten]
     if (diffuseFactor > 0.0f)
     {
@@ -87,31 +87,31 @@ void ComputeDirectionalLight(Material mat, DirectionalLight L,
 void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, float3 toEye,
 	out float4 ambient, out float4 diffuse, out float4 spec)
 {
-	// ³õÊ¼»¯Êä³ö
+	// åˆå§‹åŒ–è¾“å‡º
     ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// ´Ó±íÃæµ½¹âÔ´µÄÏòÁ¿
+	// ä»è¡¨é¢åˆ°å…‰æºçš„å‘é‡
     float3 lightVec = L.Position - pos;
 
-	// ±íÃæµ½¹âÏßµÄ¾àÀë
+	// è¡¨é¢åˆ°å…‰çº¿çš„è·ç¦»
     float d = length(lightVec);
 
-	// µÆ¹â·¶Î§²âÊÔ
+	// ç¯å…‰èŒƒå›´æµ‹è¯•
     if (d > L.Range)
         return;
 
-	// ±ê×¼»¯¹âÏòÁ¿
+	// æ ‡å‡†åŒ–å…‰å‘é‡
     lightVec /= d;
 
-	// »·¾³¹â¼ÆËã
+	// ç¯å¢ƒå…‰è®¡ç®—
     ambient = mat.Ambient * L.Ambient;
 
-	// Âş·´ÉäºÍ¾µÃæ¼ÆËã
+	// æ¼«åå°„å’Œé•œé¢è®¡ç®—
     float diffuseFactor = dot(lightVec, normal);
 
-	// Õ¹¿ªÒÔ±ÜÃâ¶¯Ì¬·ÖÖ§
+	// å±•å¼€ä»¥é¿å…åŠ¨æ€åˆ†æ”¯
 	[flatten]
     if (diffuseFactor > 0.0f)
     {
@@ -122,7 +122,7 @@ void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, fl
         spec = specFactor * mat.Specular * L.Specular;
     }
 
-	// ¹âµÄË¥Èõ
+	// å…‰çš„è¡°å¼±
     float att = 1.0f / dot(L.Att, float3(1.0f, d, d * d));
 
     diffuse *= att;
@@ -133,32 +133,32 @@ void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, fl
 void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, float3 toEye,
 	out float4 ambient, out float4 diffuse, out float4 spec)
 {
-	// ³õÊ¼»¯Êä³ö
+	// åˆå§‹åŒ–è¾“å‡º
     ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// // ´Ó±íÃæµ½¹âÔ´µÄÏòÁ¿
+	// // ä»è¡¨é¢åˆ°å…‰æºçš„å‘é‡
     float3 lightVec = L.Position - pos;
 
-    // ±íÃæµ½¹âÔ´µÄ¾àÀë
+    // è¡¨é¢åˆ°å…‰æºçš„è·ç¦»
     float d = length(lightVec);
 
-	// ·¶Î§²âÊÔ
+	// èŒƒå›´æµ‹è¯•
     if (d > L.Range)
         return;
 
-	// ±ê×¼»¯¹âÏòÁ¿
+	// æ ‡å‡†åŒ–å…‰å‘é‡
     lightVec /= d;
 
-	// ¼ÆËã»·¾³¹â²¿·Ö
+	// è®¡ç®—ç¯å¢ƒå…‰éƒ¨åˆ†
     ambient = mat.Ambient * L.Ambient;
 
 
-    // ¼ÆËãÂş·´Éä¹âºÍ¾µÃæ·´Éä¹â²¿·Ö
+    // è®¡ç®—æ¼«åå°„å…‰å’Œé•œé¢åå°„å…‰éƒ¨åˆ†
     float diffuseFactor = dot(lightVec, normal);
 
-	// Õ¹¿ªÒÔ±ÜÃâ¶¯Ì¬·ÖÖ§
+	// å±•å¼€ä»¥é¿å…åŠ¨æ€åˆ†æ”¯
 	[flatten]
     if (diffuseFactor > 0.0f)
     {
@@ -169,7 +169,7 @@ void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, floa
         spec = specFactor * mat.Specular * L.Specular;
     }
 
-	// ¼ÆËã»ã¾ÛÒò×ÓºÍË¥ÈõÏµÊı
+	// è®¡ç®—æ±‡èšå› å­å’Œè¡°å¼±ç³»æ•°
     float spot = pow(max(dot(-lightVec, L.Direction), 0.0f), L.Spot);
     float att = spot / dot(L.Att, float3(1.0f, d, d * d));
 
@@ -182,19 +182,61 @@ float3 NormalSampleToWorldSpace(float3 normalMapSample,
     float3 unitNormalW,
     float4 tangentW)
 {
-    // ½«¶ÁÈ¡µ½·¨ÏòÁ¿ÖĞµÄÃ¿¸ö·ÖÁ¿´Ó[0, 1]»¹Ô­µ½[-1, 1]
+    // å°†è¯»å–åˆ°æ³•å‘é‡ä¸­çš„æ¯ä¸ªåˆ†é‡ä»[0, 1]è¿˜åŸåˆ°[-1, 1]
     float3 normalT = 2.0f * normalMapSample - 1.0f;
 
-    // ¹¹½¨Î»ÓÚÊÀ½ç×ø±êÏµµÄÇĞÏß¿Õ¼ä
+    // æ„å»ºä½äºä¸–ç•Œåæ ‡ç³»çš„åˆ‡çº¿ç©ºé—´
     float3 N = unitNormalW;
-    float3 T = normalize(tangentW.xyz - dot(tangentW.xyz, N) * N); // Ê©ÃÜÌØÕı½»»¯
+    float3 T = normalize(tangentW.xyz - dot(tangentW.xyz, N) * N); // æ–½å¯†ç‰¹æ­£äº¤åŒ–
     float3 B = cross(N, T);
 
     float3x3 TBN = float3x3(T, B, N);
 
-    // ½«°¼Í¹·¨ÏòÁ¿´ÓÇĞÏß¿Õ¼ä±ä»»µ½ÊÀ½ç×ø±êÏµ
+    // å°†å‡¹å‡¸æ³•å‘é‡ä»åˆ‡çº¿ç©ºé—´å˜æ¢åˆ°ä¸–ç•Œåæ ‡ç³»
     float3 bumpedNormalW = mul(normalT, TBN);
 
     return bumpedNormalW;
 }
+
+static const float SMAP_SIZE = 2048.0f;
+static const float SMAP_DX = 1.0f / SMAP_SIZE;
+
+float CalcShadowFactor(SamplerComparisonState samShadow,
+                       Texture2D shadowMap,
+					   float4 shadowPosH)
+{
+	// é€è§†é™¤æ³•
+    shadowPosH.xyz /= shadowPosH.w;
+	
+	// NDCç©ºé—´çš„æ·±åº¦å€¼
+    float depth = shadowPosH.z;
+
+	// çº¹ç´ åœ¨çº¹ç†åæ ‡ä¸‹çš„å®½é«˜
+    const float dx = SMAP_DX;
+
+    float percentLit = 0.0f;
+    const float2 offsets[9] =
+    {
+        float2(-dx, -dx), float2(0.0f, -dx), float2(dx, -dx),
+		float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+		float2(-dx, +dx), float2(0.0f, +dx), float2(dx, +dx)
+    };
+
+    // samShadowä¸ºcompareValue <= sampleValueæ—¶ä¸º1.0f(åä¹‹ä¸º0.0f), å¯¹ç›¸é‚»å››ä¸ªçº¹ç´ è¿›è¡Œé‡‡æ ·æ¯”è¾ƒ
+    // å¹¶æ ¹æ®é‡‡æ ·ç‚¹ä½ç½®è¿›è¡ŒåŒçº¿æ€§æ’å€¼
+    // float result0 = depth <= s0;  // .s0      .s1          
+    // float result1 = depth <= s1;
+    // float result2 = depth <= s2;  //     .depth
+    // float result3 = depth <= s3;  // .s2      .s3
+    // float result = BilinearLerp(result0, result1, result2, result3, a, b);  // a bä¸ºç®—å‡ºçš„æ’å€¼ç›¸å¯¹ä½ç½®                           
+	[unroll]
+    for (int i = 0; i < 9; ++i)
+    {
+        percentLit += shadowMap.SampleCmpLevelZero(samShadow,
+			shadowPosH.xy + offsets[i], depth).r;
+    }
+    
+    return percentLit /= 9.0f;
+}
+
 

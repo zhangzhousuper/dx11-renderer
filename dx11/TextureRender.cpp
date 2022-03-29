@@ -6,7 +6,7 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
-HRESULT TextureRender::InitResource(ID3D11Device* device, int texWidth, int texHeight, bool generateMips)
+HRESULT TextureRender::InitResource(ID3D11Device* device, int texWidth, int texHeight, bool shadowMap, bool generateMips)
 {
 	// 防止重复初始化造成内存泄漏
 	m_pOutputTextureSRV.Reset();
@@ -15,93 +15,80 @@ HRESULT TextureRender::InitResource(ID3D11Device* device, int texWidth, int texH
 	m_pCacheRTV.Reset();
 	m_pCacheDSV.Reset();
 
-	m_GenerateMips = generateMips;
+	m_ShadowMap = shadowMap;
+	m_GenerateMips = false;
 	HRESULT hr;
+	if (!m_ShadowMap)
+	{
+		m_GenerateMips = generateMips;
+
+		// ******************
+		// 创建纹理
+		//
+
+		ComPtr<ID3D11Texture2D> texture;
+		CD3D11_TEXTURE2D_DESC texDesc(DXGI_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, 1,
+			(m_GenerateMips ? 0 : 1), D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
+			D3D11_USAGE_DEFAULT, 0, 1, 0, (m_GenerateMips ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0));		
+
+		hr = device->CreateTexture2D(&texDesc, nullptr, texture.GetAddressOf());
+		if (FAILED(hr))
+			return hr;
+
+		// ******************
+		// 创建纹理对应的渲染目标视图
+		//
+
+		CD3D11_RENDER_TARGET_VIEW_DESC rtvDesc(texture.Get(), D3D11_RTV_DIMENSION_TEXTURE2D);
+
+		hr = device->CreateRenderTargetView(texture.Get(), &rtvDesc, m_pOutputTextureRTV.GetAddressOf());
+		if (FAILED(hr))
+			return hr;
+
+		// ******************
+		// 创建纹理对应的着色器资源视图
+		//
+
+		CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc(texture.Get(), D3D11_SRV_DIMENSION_TEXTURE2D);
+
+		hr = device->CreateShaderResourceView(texture.Get(), &srvDesc,
+			m_pOutputTextureSRV.GetAddressOf());
+		if (FAILED(hr))
+			return hr;
+	}
+	
 	// ******************
-	// 1. 创建纹理
+	// 创建与纹理等宽高的深度/模板缓冲区或阴影贴图，以及对应的视图
 	//
-
-	ComPtr<ID3D11Texture2D> texture;
-	D3D11_TEXTURE2D_DESC texDesc;
-
-	texDesc.Width = texWidth;
-	texDesc.Height = texHeight;
-	texDesc.MipLevels = (m_GenerateMips ? 0 : 1);	// 0为完整mipmap链
-	texDesc.ArraySize = 1;
-	texDesc.SampleDesc.Count = 1;
-	texDesc.SampleDesc.Quality = 0;
-	texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-
-	// 现在texture用于新建纹理
-	hr = device->CreateTexture2D(&texDesc, nullptr, texture.GetAddressOf());
-	if (FAILED(hr))
-		return hr;
-	// ******************
-	// 2. 创建纹理对应的渲染目标视图
-	//
-
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-	rtvDesc.Format = texDesc.Format;
-	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	rtvDesc.Texture2D.MipSlice = 0;
-
-	hr = device->CreateRenderTargetView(texture.Get(), &rtvDesc, m_pOutputTextureRTV.GetAddressOf());
-	if (FAILED(hr))
-		return hr;
-
-	// ******************
-	// 3. 创建纹理对应的着色器资源视图
-	//
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	srvDesc.Format = texDesc.Format;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = -1;	// 使用所有的mip等级
-
-	hr = device->CreateShaderResourceView(texture.Get(), &srvDesc,
-		m_pOutputTextureSRV.GetAddressOf());
-	if (FAILED(hr))
-		return hr;
-
-	// ******************
-	// 4. 创建与纹理等宽高的深度/模板缓冲区和对应的视图
-	//
-
-	texDesc.Width = texWidth;
-	texDesc.Height = texHeight;
-	texDesc.MipLevels = 0;
-	texDesc.ArraySize = 1;
-	texDesc.SampleDesc.Count = 1;
-	texDesc.SampleDesc.Quality = 0;
-	texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.MiscFlags = 0;
+	CD3D11_TEXTURE2D_DESC texDesc((m_ShadowMap ? DXGI_FORMAT_R24G8_TYPELESS : DXGI_FORMAT_D24_UNORM_S8_UINT),
+		texWidth, texHeight, 1, 1,
+		D3D11_BIND_DEPTH_STENCIL | (m_ShadowMap ? D3D11_BIND_SHADER_RESOURCE : 0));
 
 	ComPtr<ID3D11Texture2D> depthTex;
 	hr = device->CreateTexture2D(&texDesc, nullptr, depthTex.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-	dsvDesc.Format = texDesc.Format;
-	dsvDesc.Flags = 0;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Texture2D.MipSlice = 0;
+	CD3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc(depthTex.Get(), D3D11_DSV_DIMENSION_TEXTURE2D, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 	hr = device->CreateDepthStencilView(depthTex.Get(), &dsvDesc,
 		m_pOutputTextureDSV.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
+	if (m_ShadowMap)
+	{
+		// 阴影贴图的SRV
+		CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc(depthTex.Get(), D3D11_SRV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R24_UNORM_X8_TYPELESS);
+
+		hr = device->CreateShaderResourceView(depthTex.Get(), &srvDesc,
+			m_pOutputTextureSRV.GetAddressOf());
+		if (FAILED(hr))
+			return hr;
+	}
+
 	// ******************
-	// 5. 初始化视口
+	// 初始化视口
 	//
 	m_OutputViewPort.TopLeftX = 0.0f;
 	m_OutputViewPort.TopLeftY = 0.0f;
@@ -121,12 +108,18 @@ void TextureRender::Begin(ID3D11DeviceContext* deviceContext, const FLOAT backgr
 	UINT num_Viewports = 1;
 	deviceContext->RSGetViewports(&num_Viewports, &m_CacheViewPort);
 
-
 	// 清空缓冲区
-	deviceContext->ClearRenderTargetView(m_pOutputTextureRTV.Get(), backgroundColor);
-	deviceContext->ClearDepthStencilView(m_pOutputTextureDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	if (!m_ShadowMap)
+	{
+		deviceContext->ClearRenderTargetView(m_pOutputTextureRTV.Get(), backgroundColor);
+
+	}
+	deviceContext->ClearDepthStencilView(m_pOutputTextureDSV.Get(), D3D11_CLEAR_DEPTH | (m_ShadowMap ? 0 : D3D11_CLEAR_STENCIL), 1.0f, 0);
+	
 	// 设置渲染目标和深度模板视图
-	deviceContext->OMSetRenderTargets(1, m_pOutputTextureRTV.GetAddressOf(), m_pOutputTextureDSV.Get());
+	deviceContext->OMSetRenderTargets((m_ShadowMap ? 0 : 1), 
+		(m_ShadowMap ? nullptr : m_pOutputTextureRTV.GetAddressOf()), 
+		m_pOutputTextureDSV.Get());
 	// 设置视口
 	deviceContext->RSSetViewports(1, &m_OutputViewPort);
 }
@@ -156,9 +149,17 @@ ID3D11ShaderResourceView* TextureRender::GetOutputTexture()
 void TextureRender::SetDebugObjectName(const std::string& name)
 {
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
-	D3D11SetDebugObjectName(m_pOutputTextureDSV.Get(), name + ".TextureDSV");
-	D3D11SetDebugObjectName(m_pOutputTextureSRV.Get(), name + ".TextureSRV");
-	D3D11SetDebugObjectName(m_pOutputTextureRTV.Get(), name + ".TextureRTV");
+	if (m_ShadowMap)
+	{
+		D3D11SetDebugObjectName(m_pOutputTextureDSV.Get(), name + ".DepthBufferDSV");
+		D3D11SetDebugObjectName(m_pOutputTextureSRV.Get(), name + ".DepthBufferSRV");
+	}
+	else
+	{
+		D3D11SetDebugObjectName(m_pOutputTextureDSV.Get(), name + ".TextureDSV");
+		D3D11SetDebugObjectName(m_pOutputTextureSRV.Get(), name + ".TextureSRV");
+		D3D11SetDebugObjectName(m_pOutputTextureRTV.Get(), name + ".TextureRTV");
+	}
 #else
 	UNREFERENCED_PARAMETER(name);
 #endif

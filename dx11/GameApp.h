@@ -7,15 +7,15 @@
 #include "GameObject.h"
 #include "ObjReader.h"
 #include "Collision.h"
-#include "OITRender.h"
+#include "SkyRender.h"
+#include "SSAORender.h"
 #include "TextureRender.h"
-#include "WavesRender.h"
+
 class GameApp : public D3DApp
 {
 public:
 	// 摄像机模式
 	enum class CameraMode { FirstPerson, ThirdPerson, Free };
-
 public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
@@ -24,6 +24,9 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
+	void DrawScene(BasicEffect* pBasicEffect, bool enableNormalMap = false);
+	void DrawScene(ShadowEffect* pShadowEffect);
+	void DrawScene(SSAOEffect* pSSAOEffect);
 
 private:
 	bool InitResource();
@@ -34,26 +37,41 @@ private:
 	ComPtr<IDWriteFont> m_pFont;								// 字体
 	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
 
-	std::mt19937 m_RandEngine;									// 随机数生成器
-	std::uniform_int_distribution<UINT> m_RowRange;				// 行索引范围
-	std::uniform_int_distribution<UINT> m_ColRange;				// 列索引范围
-	std::uniform_real_distribution<float> m_MagnitudeRange;		// 振幅范围
+	bool m_EnableSSAO;											// 开启SSAO
+	bool m_EnableNormalMap;										// 开启法线贴图
+	bool m_EnableDebug;											// 开启调试模式
+	bool m_GrayMode;											// 深度值以灰度形式显示
+	size_t m_SlopeIndex;										// 斜率索引
 
-	BasicEffect m_BasicEffect;									// 对象渲染特效管理
+	GameObject m_Ground;										// 地面
+	GameObject m_GroundT;										// 带切线向量的地面
 
-	GameObject m_Land;											// 地面对象
-	GameObject m_RedBox;										// 红色箱子
-	GameObject m_YellowBox;										// 黄色箱子
+	GameObject m_Cylinder;										// 圆柱体
+	GameObject m_CylinderT;										// 带切线向量的圆柱体
+	std::vector<Transform> m_CylinderTransforms;				// 圆柱体变换信息
 
-	std::unique_ptr<GpuWavesRender> m_pGpuWavesRender;			// GPU波浪渲染器
-	std::unique_ptr<TextureRender> m_pTextureRender;			// RTT渲染器
-	std::unique_ptr<OITRender> m_pOITRender;					// OIT渲染器
+	GameObject m_Sphere;										// 球体
+	GameObject m_SphereT;										// 带切线向量的球体
+	std::vector<Transform> m_SphereTransforms;					// 球体变换信息
 
-	float m_BaseTime;											// 控制水波生成的基准时间
+	GameObject m_House;											// 房屋
 
-	bool m_EnabledFog;											// 开启雾效
-	bool m_EnabledOIT;											// 开启OIT
-	bool m_EnabledNoDepthWrite;									// 开启仅深度测试
+	GameObject m_DebugQuad;										// 调试用四边形
+	GameObject m_FullScreenDebugQuad;							// 调试用全屏四边形
+
+	DirectionalLight m_DirLights[3] = {};						// 方向光
+	DirectX::XMFLOAT3 m_OriginalLightDirs[3] = {};				// 初始光方向
+
+	std::unique_ptr<BasicEffect> m_pBasicEffect;				// 基础特效
+	std::unique_ptr<ShadowEffect> m_pShadowEffect;				// 阴影特效
+	std::unique_ptr<SSAOEffect> m_pSSAOEffect;					// SSAO特效
+	std::unique_ptr<SkyEffect> m_pSkyEffect;					// 天空盒特效
+	std::unique_ptr<DebugEffect> m_pDebugEffect;				// 调试用显示纹理的特效
+
+	std::unique_ptr<TextureRender> m_pShadowMap;				// 阴影贴图
+	std::unique_ptr<SkyRender> m_pDesert;						// 天空盒(沙漠)
+	std::unique_ptr<SSAORender> m_pSSAOMap;						// SSAO贴图
+	std::unique_ptr<TextureRender> m_pDebugSSAOMap;				// 调试用SSAO贴图
 
 	std::shared_ptr<Camera> m_pCamera;						    // 摄像机
 };

@@ -1,5 +1,5 @@
 //***************************************************************************************
-// GameObject.h by X_Jun(MKXJun) (C) 2018-2020 All Rights Reserved.
+// GameObject.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
 // 简易游戏对象
@@ -63,9 +63,9 @@ public:
 	//
 
 	// 绘制对象
-	void Draw(ID3D11DeviceContext * deviceContext, BasicEffect& effect);
+	void Draw(ID3D11DeviceContext* deviceContext, IEffect* effect);
 	// 绘制实例
-	void DrawInstanced(ID3D11DeviceContext* deviceContext, BasicEffect& effect, const std::vector<Transform>& data);
+	void DrawInstanced(ID3D11DeviceContext* deviceContext, IEffect* effect, const std::vector<Transform>& data);
 
 	//
 	// 调试 

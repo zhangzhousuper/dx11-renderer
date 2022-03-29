@@ -4,27 +4,31 @@
 
 using namespace Microsoft::WRL;
 
-ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull = nullptr;
-ComPtr<ID3D11RasterizerState> RenderStates::RSWireframe = nullptr;
-ComPtr<ID3D11RasterizerState> RenderStates::RSCullClockWise = nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSNoCull			= nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSWireframe			= nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSCullClockWise		= nullptr;
+ComPtr<ID3D11RasterizerState> RenderStates::RSDepth				= nullptr;
 
-ComPtr<ID3D11SamplerState> RenderStates::SSPointClamp = nullptr;
-ComPtr<ID3D11SamplerState> RenderStates::SSAnisotropicWrap = nullptr;
-ComPtr<ID3D11SamplerState> RenderStates::SSLinearWrap = nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSPointClamp			= nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSAnisotropicWrap		= nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSLinearWrap			= nullptr;
+ComPtr<ID3D11SamplerState> RenderStates::SSShadow				= nullptr;
 
-ComPtr<ID3D11BlendState> RenderStates::BSAlphaToCoverage = nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSNoColorWrite = nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSTransparent = nullptr;
-ComPtr<ID3D11BlendState> RenderStates::BSAdditive = nullptr;
 
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSLessEqual = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSWriteStencil = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSDrawWithStencil = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDoubleBlend = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTest = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWrite = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTestWithStencil = nullptr;
-ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWriteWithStencil = nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSAlphaToCoverage		= nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSNoColorWrite			= nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSTransparent			= nullptr;
+ComPtr<ID3D11BlendState> RenderStates::BSAdditive				= nullptr;
+
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSEqual          = nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSLessEqual		= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSWriteStencil	= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSDrawWithStencil= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDoubleBlend	= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTest	= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWrite	= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthTestWithStencil		= nullptr;
+ComPtr<ID3D11DepthStencilState> RenderStates::DSSNoDepthWriteWithStencil	= nullptr;
 
 bool RenderStates::IsInit()
 {
@@ -32,7 +36,7 @@ bool RenderStates::IsInit()
 	return RSWireframe != nullptr;
 }
 
-void RenderStates::InitAll(ID3D11Device* device)
+void RenderStates::InitAll(ID3D11Device * device)
 {
 	// 先前初始化过的话就没必要重来了
 	if (IsInit())
@@ -49,7 +53,7 @@ void RenderStates::InitAll(ID3D11Device* device)
 	rasterizerDesc.FrontCounterClockwise = false;
 	rasterizerDesc.DepthClipEnable = true;
 	HR(device->CreateRasterizerState(&rasterizerDesc, RSWireframe.GetAddressOf()));
-
+	 
 	// 无背面剔除模式
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
@@ -63,6 +67,16 @@ void RenderStates::InitAll(ID3D11Device* device)
 	rasterizerDesc.FrontCounterClockwise = true;
 	rasterizerDesc.DepthClipEnable = true;
 	HR(device->CreateRasterizerState(&rasterizerDesc, RSCullClockWise.GetAddressOf()));
+
+	// 深度偏移模式
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.FrontCounterClockwise = false;
+	rasterizerDesc.DepthClipEnable = true;
+	rasterizerDesc.DepthBias = 100000;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 1.0f;
+	HR(device->CreateRasterizerState(&rasterizerDesc, RSDepth.GetAddressOf()));
 
 	// ******************
 	// 初始化采样器状态
@@ -101,6 +115,18 @@ void RenderStates::InitAll(ID3D11Device* device)
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	HR(device->CreateSamplerState(&sampDesc, SSAnisotropicWrap.GetAddressOf()));
 
+	// 采样器状态：深度比较与Border模式
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	sampDesc.BorderColor[0] = { 1.0f };
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	HR(device->CreateSamplerState(&sampDesc, SSShadow.GetAddressOf()));
+	
 	// ******************
 	// 初始化混合状态
 	//
@@ -128,7 +154,7 @@ void RenderStates::InitAll(ID3D11Device* device)
 	rtDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 	HR(device->CreateBlendState(&blendDesc, BSTransparent.GetAddressOf()));
-
+	
 	// 加法混合模式
 	// Color = SrcColor + DestColor
 	// Alpha = SrcAlpha
@@ -158,14 +184,19 @@ void RenderStates::InitAll(ID3D11Device* device)
 	// 初始化深度/模板状态
 	//
 	D3D11_DEPTH_STENCIL_DESC dsDesc;
+	ZeroMemory(&dsDesc, sizeof dsDesc);
+	// 仅允许深度值一致的像素进行写入的深度/模板状态
+	// 没必要写入深度
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dsDesc.DepthFunc = D3D11_COMPARISON_EQUAL;
+
+	HR(device->CreateDepthStencilState(&dsDesc, DSSEqual.GetAddressOf()));
 
 	// 允许使用深度值一致的像素进行替换的深度/模板状态
 	// 该状态用于绘制天空盒，因为深度值为1.0时默认无法通过深度测试
-	dsDesc.DepthEnable = true;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-
-	dsDesc.StencilEnable = false;
 
 	HR(device->CreateDepthStencilState(&dsDesc, DSSLessEqual.GetAddressOf()));
 
@@ -306,9 +337,11 @@ void RenderStates::InitAll(ID3D11Device* device)
 	D3D11SetDebugObjectName(RSCullClockWise.Get(), "RSCullClockWise");
 	D3D11SetDebugObjectName(RSNoCull.Get(), "RSNoCull");
 	D3D11SetDebugObjectName(RSWireframe.Get(), "RSWireframe");
+	D3D11SetDebugObjectName(RSDepth.Get(), "RSDepth");
 
 	D3D11SetDebugObjectName(SSAnisotropicWrap.Get(), "SSAnisotropicWrap");
 	D3D11SetDebugObjectName(SSLinearWrap.Get(), "SSLinearWrap");
+	D3D11SetDebugObjectName(SSShadow.Get(), "SSShadow");
 
 	D3D11SetDebugObjectName(BSAlphaToCoverage.Get(), "BSAlphaToCoverage");
 	D3D11SetDebugObjectName(BSNoColorWrite.Get(), "BSNoColorWrite");
