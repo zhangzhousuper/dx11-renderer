@@ -1,9 +1,9 @@
 #include "SSAO.hlsli"
 
-// Éú³É¹Û²ì¿Õ¼äµÄ·¨ÏòÁ¿ºÍÉî¶ÈÖµµÄRTTµÄÏñËØ×ÅÉ«Æ÷
+// ç”Ÿæˆè§‚å¯Ÿç©ºé—´çš„æ³•å‘é‡å’Œæ·±åº¦å€¼çš„RTTçš„åƒç´ ç€è‰²å™¨
 float4 PS(VertexPosHVNormalVTex pIn, uniform bool alphaClip) : SV_TARGET
 {
-    // ½«·¨ÏòÁ¿¸ø±ê×¼»¯
+    // å°†æ³•å‘é‡ç»™æ ‡å‡†åŒ–
     pIn.NormalV = normalize(pIn.NormalV);
     
     if (alphaClip)
@@ -13,6 +13,6 @@ float4 PS(VertexPosHVNormalVTex pIn, uniform bool alphaClip) : SV_TARGET
         clip(g_TexColor.a - 0.1f);
     }
     
-    // ·µ»Ø¹Û²ì¿Õ¼äµÄ·¨ÏòÁ¿ºÍÉî¶ÈÖµ
+    // è¿”å›è§‚å¯Ÿç©ºé—´çš„æ³•å‘é‡å’Œæ·±åº¦å€¼
     return float4(pIn.NormalV, pIn.PosV.z);
 }

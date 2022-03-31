@@ -1,14 +1,14 @@
 #include "SSAO.hlsli"
 
-// 绘制SSAO图的顶点着色器
+// 缁樺埗SSAO鍥剧殑椤剁偣鐫�鑹插櫒
 VertexOut VS(VertexIn vIn)
 {
     VertexOut vOut;
     
-    // 已经在NDC空间
+    // 宸茬粡鍦∟DC绌洪棿
     vOut.PosH = float4(vIn.PosL, 1.0f);
     
-    // 我们用它的x分量来索引视锥体远平面的顶点数组
+    // 鎴戜滑鐢ㄥ畠鐨剎鍒嗛噺鏉ョ储寮曡閿ヤ綋杩滃钩闈㈢殑椤剁偣鏁扮粍
     vOut.ToFarPlane = g_FrustumCorners[vIn.ToFarPlaneIndex.x].xyz;
     
     vOut.Tex = vIn.Tex;

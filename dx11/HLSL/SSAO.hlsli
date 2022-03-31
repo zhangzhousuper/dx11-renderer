@@ -1,7 +1,9 @@
+
 Texture2D g_DiffuseMap : register(t0);
-Texture2D g_NormalDepthMap : register(t1);
-Texture2D g_RandomVecMap : register(t2);
-Texture2D g_InputImage : register(t3);
+Texture2D g_NormalMap : register(t1);
+Texture2D g_NormalDepthMap : register(t2);
+Texture2D g_RandomVecMap : register(t3);
+Texture2D g_InputImage : register(t4);
 
 SamplerState g_SamLinearWrap : register(s0);
 SamplerState g_SamNormalDepth : register(s1);
@@ -11,8 +13,10 @@ SamplerState g_SamBlur : register(s3); // MIG_MAG_LINEAR_MIP_POINT CLAMP
 cbuffer CBChangesEveryObjectDrawing : register(b0)
 {
     //
-    // ÓÃÓÚSSAO_NormalDepth
+    // ç”¨äºSSAO_NormalDepth
     //
+    matrix g_World;
+    matrix g_WorldInvTranspose;
     matrix g_WorldView;
     matrix g_WorldViewProj;
     matrix g_WorldInvTransposeView;
@@ -21,6 +25,13 @@ cbuffer CBChangesEveryObjectDrawing : register(b0)
 cbuffer CBChangesEveryFrame : register(b1)
 {
     matrix g_View;
+    matrix g_ViewProj;
+    float3 g_EyePosW;
+    float g_HeightScale;
+    float g_MaxTessDistance;
+    float g_MinTessDistance;
+    float g_MinTessFactor;
+    float g_MaxTessFactor;
 }
 
 cbuffer CBChangesOnResize : register(b2)
@@ -28,25 +39,25 @@ cbuffer CBChangesOnResize : register(b2)
     matrix g_Proj;
     
     //
-    // ÓÃÓÚSSAO
+    // ç”¨äºSSAO
     //
-    matrix g_ViewToTexSpace; // Proj * Texture
-    float4 g_FrustumCorners[4]; // ÊÓ×¶ÌåÔ¶Æ½ÃæµÄ4¸ö¶Ëµã
+    matrix g_ViewToTexSpace;    // Proj * Texture
+    float4 g_FrustumCorners[4]; // è§†é”¥ä½“è¿œå¹³é¢çš„4ä¸ªç«¯ç‚¹
 }
 
 cbuffer CBChangesRarely : register(b3)
 {
-    // 14¸ö·½Ïò¾ùÔÈ·Ö²¼µ«³¤¶ÈËæ»úµÄÏòÁ¿
-    float4 g_OffsetVectors[14];
+    // 14ä¸ªæ–¹å‘å‡åŒ€åˆ†å¸ƒä½†é•¿åº¦éšæœºçš„å‘é‡
+    float4 g_OffsetVectors[14]; 
     
-    // ¹Û²ì¿Õ¼äÏÂµÄ×ø±ê
+    // è§‚å¯Ÿç©ºé—´ä¸‹çš„åæ ‡
     float g_OcclusionRadius = 0.5f;
     float g_OcclusionFadeStart = 0.2f;
     float g_OcclusionFadeEnd = 2.0f;
     float g_SurfaceEpsilon = 0.05f;
     
     //
-    // ÓÃÓÚSSAO_Blur
+    // ç”¨äºSSAO_Blur
     //
     float4 g_BlurWeights[3] =
     {
@@ -60,7 +71,7 @@ cbuffer CBChangesRarely : register(b3)
 };
 
 //
-// ÓÃÓÚSSAO_NormalDepthºÍSSAO_Blur
+// ç”¨äºSSAO_NormalDepthå’ŒSSAO_Blur
 //
 struct VertexPosNormalTex
 {
@@ -92,19 +103,48 @@ struct VertexPosHTex
     float2 Tex : TEXCOORD;
 };
 
+struct TessVertexOut
+{
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float2 Tex : TEXCOORD;
+    float TessFactor : TESS;
+};
+
+struct PatchTess
+{
+    float EdgeTess[3] : SV_TessFactor;
+    float InsideTess : SV_InsideTessFactor;
+};
+
+struct HullOut
+{
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float2 Tex : TEXCOORD;
+};
+
+struct DomainOut
+{
+    float4 PosH : SV_POSITION;
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float2 Tex : TEXCOORD;
+};
+
 //
-// ÓÃÓÚSSAO
+// ç”¨äºSSAO
 //
 struct VertexIn
 {
     float3 PosL : POSITION;
-    float3 ToFarPlaneIndex : NORMAL; // ½öÊ¹ÓÃx·ÖÁ¿À´½øĞĞ¶ÔÊÓ×¶ÌåÔ¶Æ½Ãæ¶¥µãµÄË÷Òı
+    float3 ToFarPlaneIndex : NORMAL; // ä»…ä½¿ç”¨xåˆ†é‡æ¥è¿›è¡Œå¯¹è§†é”¥ä½“è¿œå¹³é¢é¡¶ç‚¹çš„ç´¢å¼•
     float2 Tex : TEXCOORD;
 };
 
 struct VertexOut
 {
     float4 PosH : SV_POSITION;
-    float3 ToFarPlane : TEXCOORD0; // Ô¶Æ½Ãæ¶¥µã×ø±ê
+    float3 ToFarPlane : TEXCOORD0; // è¿œå¹³é¢é¡¶ç‚¹åæ ‡
     float2 Tex : TEXCOORD1;
 };

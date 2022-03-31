@@ -118,11 +118,30 @@ bool SSAOEffect::InitAll(ID3D11Device* device)
 	HR(device->CreateInputLayout(instLayout, ARRAYSIZE(instLayout),
 		blob->GetBufferPointer(), blob->GetBufferSize(), pImpl->m_pInstancePosNormalTexLayout.GetAddressOf()));
 
+	HR(CreateShaderFromFile(L"HLSL\\SSAO_NormalDepth_ObjectTess_VS.cso", L"HLSL\\SSAO_NormalDepth_ObjectTess_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(pImpl->m_pEffectHelper->AddShader("SSAO_NormalDepth_ObjectTess_VS", device, blob.Get()));
+
+	HR(CreateShaderFromFile(L"HLSL\\SSAO_NormalDepth_InstanceTess_VS.cso", L"HLSL\\SSAO_NormalDepth_InstanceTess_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(pImpl->m_pEffectHelper->AddShader("SSAO_NormalDepth_InstanceTess_VS", device, blob.Get()));
+
 	HR(CreateShaderFromFile(L"HLSL\\SSAO_VS.cso", L"HLSL\\SSAO_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("SSAO_VS", device, blob.Get()));
 
 	HR(CreateShaderFromFile(L"HLSL\\SSAO_Blur_VS.cso", L"HLSL\\SSAO_Blur_VS.hlsl", "VS", "vs_5_0", blob.ReleaseAndGetAddressOf()));
 	HR(pImpl->m_pEffectHelper->AddShader("SSAO_Blur_VS", device, blob.Get()));
+
+	// ******************
+	// 创建外壳着色器
+	//
+	HR(CreateShaderFromFile(L"HLSL\\SSAO_NormalDepth_HS.cso", L"HLSL\\SSAO_NormalDepth_HS.hlsl", "HS", "hs_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(pImpl->m_pEffectHelper->AddShader("SSAO_NormalDepth_HS", device, blob.Get()));
+
+	// ******************
+	// 创建域着色器
+	//
+	HR(CreateShaderFromFile(L"HLSL\\SSAO_NormalDepth_DS.cso", L"HLSL\\SSAO_NormalDepth_DS.hlsl", "DS", "ds_5_0", blob.ReleaseAndGetAddressOf()));
+	HR(pImpl->m_pEffectHelper->AddShader("SSAO_NormalDepth_DS", device, blob.Get()));
+	
 
 	// ******************
 	// 创建像素着色器
@@ -147,6 +166,20 @@ bool SSAOEffect::InitAll(ID3D11Device* device)
 	passDesc.nameVS = "SSAO_NormalDepth_Instance_VS";
 	passDesc.namePS = "SSAO_NormalDepth_PS";
 	HR(pImpl->m_pEffectHelper->AddEffectPass("SSAO_NormalDepth_Instance", device, &passDesc));
+	passDesc.nameVS = "SSAO_NormalDepth_ObjectTess_VS";
+	passDesc.nameHS = "SSAO_NormalDepth_HS";
+	passDesc.nameDS = "SSAO_NormalDepth_DS";
+	passDesc.namePS = "SSAO_NormalDepth_PS";
+	HR(pImpl->m_pEffectHelper->AddEffectPass("SSAO_NormalDepth_ObjectTess", device, &passDesc));
+	passDesc.nameVS = "SSAO_NormalDepth_InstanceTess_VS";
+	passDesc.nameHS = "SSAO_NormalDepth_HS";
+	passDesc.nameDS = "SSAO_NormalDepth_DS";
+	passDesc.namePS = "SSAO_NormalDepth_PS";
+	HR(pImpl->m_pEffectHelper->AddEffectPass("SSAO_NormalDepth_InstanceTess", device, &passDesc));
+	
+	passDesc.nameHS = nullptr;
+	passDesc.nameDS = nullptr;
+
 	passDesc.nameVS = "SSAO_VS";
 	passDesc.namePS = "SSAO_PS";
 	HR(pImpl->m_pEffectHelper->AddEffectPass("SSAO", device, &passDesc));
@@ -213,6 +246,23 @@ void SSAOEffect::SetRenderNormalDepth(ID3D11DeviceContext* deviceContext, Render
 	
 }
 
+void SSAOEffect::SetRenderNormalDepthWithDisplacementMap(ID3D11DeviceContext* deviceContext, RenderType type, bool enableAlphaClip)
+{
+	if (type == RenderObject)
+	{
+		deviceContext->IASetInputLayout(pImpl->m_pVertexPosNormalTexLayout.Get());
+		pImpl->m_pCurrEffectPass = pImpl->m_pEffectHelper->GetEffectPass("SSAO_NormalDepth_ObjectTess");
+	}
+	else
+	{
+		deviceContext->IASetInputLayout(pImpl->m_pInstancePosNormalTexLayout.Get());
+		pImpl->m_pCurrEffectPass = pImpl->m_pEffectHelper->GetEffectPass("SSAO_NormalDepth_InstanceTess");
+	}
+	pImpl->m_RenderType = type;
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+	pImpl->m_pCurrEffectPass->PSGetParamByName("alphaClip")->SetUInt(enableAlphaClip);
+}
+
 void SSAOEffect::SetRenderSSAOMap(ID3D11DeviceContext* deviceContext, int sampleCount)
 {
 	deviceContext->IASetInputLayout(pImpl->m_pVertexPosNormalTexLayout.Get());
@@ -247,6 +297,29 @@ void XM_CALLCONV SSAOEffect::SetProjMatrix(DirectX::FXMMATRIX P)
 void SSAOEffect::SetTextureDiffuse(ID3D11ShaderResourceView* textureDiffuse)
 {
 	pImpl->m_pEffectHelper->SetShaderResourceByName("g_DiffuseMap", textureDiffuse);
+}
+
+void SSAOEffect::SetTextureNormalMap(ID3D11ShaderResourceView* textureNormalMap)
+{
+	pImpl->m_pEffectHelper->SetShaderResourceByName("g_NormalMap", textureNormalMap);
+}
+
+void SSAOEffect::SetEyePos(const DirectX::XMFLOAT3& eyePos)
+{
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_EyePosW")->SetFloatVector(3, (FLOAT*)&eyePos);
+}
+
+void SSAOEffect::SetHeightScale(float scale)
+{
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_HeightScale")->SetFloat(scale);
+}
+
+void SSAOEffect::SetTessInfo(float maxTessDistance, float minTessDistance, float minTessFactor, float maxTessFactor)
+{
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_MaxTessDistance")->SetFloat(maxTessDistance);
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_MinTessDistance")->SetFloat(minTessDistance);
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_MinTessFactor")->SetFloat(minTessFactor);
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_MaxTessFactor")->SetFloat(maxTessFactor);
 }
 
 void SSAOEffect::SetTextureNormalDepth(ID3D11ShaderResourceView* textureNormalDepth)
@@ -306,9 +379,13 @@ void SSAOEffect::Apply(ID3D11DeviceContext* deviceContext)
 		XMMATRIX WInvT = InverseTranspose(W);
 		XMMATRIX WInvTV = WInvT * V;
 
+		W = XMMatrixTranspose(W);
 		WV = XMMatrixTranspose(WV);
+		WInvT = XMMatrixTranspose(WInvT);
 		WInvTV = XMMatrixTranspose(WInvTV);
 		WVP = XMMatrixTranspose(WVP);
+		pImpl->m_pEffectHelper->GetConstantBufferVariable("g_World")->SetFloatMatrix(4, 4, (const FLOAT*)&W);
+		pImpl->m_pEffectHelper->GetConstantBufferVariable("g_WorldInvTranspose")->SetFloatMatrix(4, 4, (const FLOAT*)&WInvT);
 		pImpl->m_pEffectHelper->GetConstantBufferVariable("g_WorldView")->SetFloatMatrix(4, 4, (const FLOAT*)&WV);
 		pImpl->m_pEffectHelper->GetConstantBufferVariable("g_WorldViewProj")->SetFloatMatrix(4, 4, (const FLOAT*)&WVP);
 		pImpl->m_pEffectHelper->GetConstantBufferVariable("g_WorldInvTransposeView")->SetFloatMatrix(4, 4, (const FLOAT*)&WInvTV);
@@ -322,12 +399,13 @@ void SSAOEffect::Apply(ID3D11DeviceContext* deviceContext)
 		0.5f, 0.5f, 0.0f, 1.0f);
 	// 从观察空间到纹理空间的变换
 	XMMATRIX PT = P * T;
+	XMMATRIX VP = V * P;
 
 	V = XMMatrixTranspose(V);
-	P = XMMatrixTranspose(P);
+	VP = XMMatrixTranspose(VP);
 	PT = XMMatrixTranspose(PT);
 	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_View")->SetFloatMatrix(4, 4, (const FLOAT*)&V);
-	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_Proj")->SetFloatMatrix(4, 4, (const FLOAT*)&P);
+	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_ViewProj")->SetFloatMatrix(4, 4, (const FLOAT*)&VP);
 	pImpl->m_pEffectHelper->GetConstantBufferVariable("g_ViewToTexSpace")->SetFloatMatrix(4, 4, (const FLOAT*)&PT);
 
 	pImpl->m_pCurrEffectPass->Apply(deviceContext);

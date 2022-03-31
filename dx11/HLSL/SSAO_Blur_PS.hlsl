@@ -1,9 +1,9 @@
 #include "SSAO.hlsli"
 
-// Ë«±ßÂË²¨
+// åŒè¾¹æ»¤æ³¢
 float4 PS(VertexPosHTex pIn, uniform bool horizontalBlur) : SV_Target
 {
-    // ½â°üµ½¸¡µãÊı×é
+    // è§£åŒ…åˆ°æµ®ç‚¹æ•°ç»„
     float blurWeights[12] = (float[12]) g_BlurWeights;
     
     float2 texOffset;
@@ -16,44 +16,45 @@ float4 PS(VertexPosHTex pIn, uniform bool horizontalBlur) : SV_Target
         texOffset = float2(0.0f, 1.0f / g_InputImage.Length.y);
     }
     
-    // ×ÜÊÇ°ÑÖĞĞÄÖµ¼Ó½øÈ¥¼ÆËã
+    // æ€»æ˜¯æŠŠä¸­å¿ƒå€¼åŠ è¿›å»è®¡ç®—
     float4 color = blurWeights[g_BlurRadius] * g_InputImage.SampleLevel(g_SamBlur, pIn.Tex, 0.0f);
     float totalWeight = blurWeights[g_BlurRadius];
     
     float4 centerNormalDepth = g_NormalDepthMap.SampleLevel(g_SamBlur, pIn.Tex, 0.0f);
-    // ·Ö²ğ³ö¹Û²ì¿Õ¼äµÄ·¨ÏòÁ¿ºÍÉî¶È
+    // åˆ†æ‹†å‡ºè§‚å¯Ÿç©ºé—´çš„æ³•å‘é‡å’Œæ·±åº¦
     float3 centerNormal = centerNormalDepth.xyz;
     float centerDepth = centerNormalDepth.w;
     
     for (float i = -g_BlurRadius; i <= g_BlurRadius; ++i)
     {
-        // ÎÒÃÇÒÑ¾­½«ÖĞĞÄÖµ¼Ó½øÈ¥ÁË
+        // æˆ‘ä»¬å·²ç»å°†ä¸­å¿ƒå€¼åŠ è¿›å»äº†
         if (i == 0)
             continue;
         
         float2 tex = pIn.Tex + i * texOffset;
         
         float4 neighborNormalDepth = g_NormalDepthMap.SampleLevel(g_SamBlur, tex, 0.0f);
-        // ·Ö²ğ³ö·¨ÏòÁ¿ºÍÉî¶È
+        // åˆ†æ‹†å‡ºæ³•å‘é‡å’Œæ·±åº¦
         float3 neighborNormal = neighborNormalDepth.xyz;
         float neighborDepth = neighborNormalDepth.w;
         
         //
-        // Èç¹ûÖĞĞÄÖµºÍÏàÁÚÖµµÄÉî¶È»ò·¨ÏòÁ¿Ïà²îÌ«´ó£¬ÎÒÃÇ¾ÍÈÏÎªµ±Ç°²ÉÑùµã´¦ÓÚ±ßÔµÇøÓò£¬
-        // Òò´Ë²»¿¼ÂÇ¼ÓÈëµ±Ç°ÏàÁÚÖµ
+        // å¦‚æœä¸­å¿ƒå€¼å’Œç›¸é‚»å€¼çš„æ·±åº¦æˆ–æ³•å‘é‡ç›¸å·®å¤ªå¤§ï¼Œæˆ‘ä»¬å°±è®¤ä¸ºå½“å‰é‡‡æ ·ç‚¹å¤„äºè¾¹ç¼˜åŒºåŸŸï¼Œ
+        // å› æ­¤ä¸è€ƒè™‘åŠ å…¥å½“å‰ç›¸é‚»å€¼
         //
         
         if (dot(neighborNormal, centerNormal) >= 0.8f && abs(neighborDepth - centerDepth) <= 0.2f)
         {
             float weight = blurWeights[i + g_BlurRadius];
             
-            // ½«ÏàÁÚÏñËØ¼ÓÈë½øĞĞÄ£ºı
+            // å°†ç›¸é‚»åƒç´ åŠ å…¥è¿›è¡Œæ¨¡ç³Š
             color += weight * g_InputImage.SampleLevel(g_SamBlur, tex, 0.0f);
             totalWeight += weight;
         }
         
     }
 
-    // Í¨¹ıÈÃ×ÜÈ¨Öµ±äÎª1À´²¹³¥¶ªÆúµÄ²ÉÑùÏñËØ
+    // é€šè¿‡è®©æ€»æƒå€¼å˜ä¸º1æ¥è¡¥å¿ä¸¢å¼ƒçš„é‡‡æ ·åƒç´ 
     return color / totalWeight;
 }
+

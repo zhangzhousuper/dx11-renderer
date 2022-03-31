@@ -190,7 +190,6 @@
     <None Include="Project1.vcxproj.user" />
     <None Include="Model\house.mbo" />
     <None Include="HLSL\Sky.hlsli" />
-    <None Include="HLSL\Waves.hlsli" />
     <None Include="HLSL\SSAO.hlsli" />
     <None Include="HLSL\Basic_PS.cso" />
     <None Include="HLSL\Basicinstance_VS.cso" />
@@ -209,16 +208,13 @@
     <None Include="HLSL\SSAO_VS.cso" />
     <None Include="HLSL\WavesDisturb_CS.cso" />
     <None Include="HLSL\WavesUpdate_CS.cso" />
+    <None Include="HLSL\Shadow.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\BasicObject_VS.hlsl" />
     <FxCompile Include="HLSL\Sky_VS.hlsl" />
     <FxCompile Include="HLSL\Basicinstance_VS.hlsl" />
     <FxCompile Include="HLSL\Sky_PS.hlsl" />
-    <FxCompile Include="HLSL\TextureMul_R8G8B8A8_CS.hlsl" />
-    <FxCompile Include="HLSL\TextureMul_R32G32B32A32_CS.hlsl" />
-    <FxCompile Include="HLSL\WavesDisturb_CS.hlsl" />
-    <FxCompile Include="HLSL\WavesUpdate_CS.hlsl" />
     <FxCompile Include="HLSL\Basic_PS.hlsl" />
     <FxCompile Include="HLSL\SSAO_NormalDepth_Object_VS.hlsl" />
     <FxCompile Include="HLSL\SSAO_NormalDepth_Instance_VS.hlsl" />
@@ -239,6 +235,18 @@
     <FxCompile Include="HLSL\Shadow_PS.hlsl" />
     <FxCompile Include="HLSL\ShadowInstance_VS.hlsl" />
     <FxCompile Include="HLSL\ShadowObject_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_ObjectTEss_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_InstanceTess_VS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_HS.hlsl" />
+    <FxCompile Include="HLSL\SSAO_NormalDepth_DS.hlsl" />
+    <FxCompile Include="HLSL\ShadowObjectTess_VS.hlsl" />
+    <FxCompile Include="HLSL\ShadowInstanceTess_VS.hlsl" />
+    <FxCompile Include="HLSL\Shadow_HS.hlsl" />
+    <FxCompile Include="HLSL\Shadow_DS.hlsl" />
+    <FxCompile Include="HLSL\DisplacementMapObject_VS.hlsl" />
+    <FxCompile Include="HLSL\DisplacementMapInstance_VS.hlsl" />
+    <FxCompile Include="HLSL\DisplacementMap_HS.hlsl" />
+    <FxCompile Include="HLSL\DisplacementMap_DS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\bricks.dds" />

@@ -16,6 +16,7 @@ class GameApp : public D3DApp
 public:
 	// 摄像机模式
 	enum class CameraMode { FirstPerson, ThirdPerson, Free };
+	enum class RenderMode { Basic, NormalMap, DisplacementMap };
 public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
@@ -24,9 +25,9 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
-	void DrawScene(BasicEffect* pBasicEffect, bool enableNormalMap = false);
-	void DrawScene(ShadowEffect* pShadowEffect);
-	void DrawScene(SSAOEffect* pSSAOEffect);
+	void DrawScene(BasicEffect* pBasicEffect, RenderMode renderMode);
+	void DrawScene(ShadowEffect* pShadowEffect, RenderMode renderMode);
+	void DrawScene(SSAOEffect* pSSAOEffect, RenderMode renderMode);
 
 private:
 	bool InitResource();
@@ -37,11 +38,14 @@ private:
 	ComPtr<IDWriteFont> m_pFont;								// 字体
 	ComPtr<IDWriteTextFormat> m_pTextFormat;					// 文本格式
 
+	RenderMode m_RenderMode;									// 渲染模式
+	IEffect::RSFillMode m_FillMode;								// 光栅化填充模式
+	int m_HeightScale;	
+
 	bool m_EnableSSAO;											// 开启SSAO
 	bool m_EnableNormalMap;										// 开启法线贴图
 	bool m_EnableDebug;											// 开启调试模式
-	bool m_GrayMode;											// 深度值以灰度形式显示
-	size_t m_SlopeIndex;										// 斜率索引
+	bool m_GrayMode;											// 深度值以灰度形式显示									// 斜率索引
 
 	GameObject m_Ground;										// 地面
 	GameObject m_GroundT;										// 带切线向量的地面

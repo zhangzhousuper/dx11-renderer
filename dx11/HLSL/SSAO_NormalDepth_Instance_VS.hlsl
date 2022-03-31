@@ -1,22 +1,22 @@
 #include "SSAO.hlsli"
-// Éú³É¹Û²ì¿Õ¼äµÄ·¨ÏòÁ¿ºÍÉî¶ÈÖµµÄRTTµÄ¶¥µã×ÅÉ«Æ÷
+
+// ç”Ÿæˆè§‚å¯Ÿç©ºé—´çš„æ³•å‘é‡å’Œæ·±åº¦å€¼çš„RTTçš„é¡¶ç‚¹ç€è‰²å™¨
 VertexPosHVNormalVTex VS(InstancePosNormalTex vIn)
 {
     VertexPosHVNormalVTex vOut;
     
     vector posW = mul(float4(vIn.PosL, 1.0f), vIn.World);
-    matrix viewProj = mul(g_View, g_Proj);
     matrix worldView = mul(vIn.World, g_View);
     matrix worldInvTransposeView = mul(vIn.WorldInvTranspose, g_View);
     
-    // ±ä»»µ½¹Û²ì¿Õ¼ä
+    // å˜æ¢åˆ°è§‚å¯Ÿç©ºé—´
     vOut.PosV = mul(float4(vIn.PosL, 1.0f), worldView).xyz;
     vOut.NormalV = mul(vIn.NormalL, (float3x3) worldInvTransposeView);
     
-    // ±ä»»µ½²Ã¼ô¿Õ¼ä
-    vOut.PosH = mul(posW, viewProj);
+    // å˜æ¢åˆ°è£å‰ªç©ºé—´
+    vOut.PosH = mul(posW, g_ViewProj);
     
     vOut.Tex = vIn.Tex;
     
-    return vOut;
+	return vOut;
 }

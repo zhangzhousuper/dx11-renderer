@@ -30,10 +30,14 @@ cbuffer CBDrawingStates : register(b2)
 
 cbuffer CBChangesEveryFrame : register(b3)
 {
-    matrix g_View;
+    matrix g_ViewProj;
     matrix g_ShadowTransform;   // ShadowView * ShadowProj * T
     float3 g_EyePosW;
-    float g_Pad2;
+    float g_HeightScale;
+    float g_MaxTessDistance;
+    float g_MinTessDistance;
+    float g_MinTessFactor;
+    float g_MaxTessFactor;
 }
 
 cbuffer CBChangesOnResize : register(b4)
@@ -103,3 +107,25 @@ struct VertexOutNormalMap
     float4 SSAOPosH : TEXCOORD2;
 };
 
+struct TessVertexOut
+{
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float4 TangentW : TANGENT;
+    float2 Tex : TEXCOORD0;
+    float  TessFactor : TESS;
+};
+
+struct PatchTess
+{
+    float EdgeTess[3] : SV_TessFactor;
+    float InsideTess : SV_InsideTessFactor;
+};
+
+struct HullOut
+{
+    float3 PosW : POSITION;
+    float3 NormalW : NORMAL;
+    float4 TangentW : TANGENT;
+    float2 Tex : TEXCOORD;
+};
